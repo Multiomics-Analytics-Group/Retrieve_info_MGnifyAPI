@@ -59,4 +59,4 @@ for study in all_studies_data:
 df_studies_wwt_mgnify = pd.DataFrame(study_list)
 #%%
 # Export the DataFrame to a CSV file
-df_studies_wwt_mgnify.to_csv('Mgnify_studies_wwt_shot_metag_assembly.csv', index=False)
+df_studies_wwt_mgnify.to_csv('Mgnify_studies_wwt.csv', index=False)

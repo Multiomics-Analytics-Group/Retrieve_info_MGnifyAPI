@@ -97,5 +97,25 @@ df_analyses_wwt_mgnify_def = df_analyses_wwt_mgnify.merge(study_data_df, on="stu
 df_analyses_wwt_mgnify_def = df_analyses_wwt_mgnify_def[['analysis_id', 'sample_id', 'experiment_type', 'pipeline_version', 'instrument_platform', 
                                                          'study_id', 'bioproject', 'study_name', 'n_samples', 'centre_name', 'biomes']]
 #%%
-# Export the DataFrame to a CSV file
+# Create a dataframe with the unique study IDs
+study_ids = pd.DataFrame(df_analyses_wwt_mgnify_def["study_id"].unique(), columns=['study_id'])
+
+# Remove NaN values
+study_ids = study_ids.dropna()
+
+# Create an empty DataFrame to store the extracted information
+studies_wwt_shot_metag_assembly = pd.DataFrame(columns=['study_id', 'study_name','bioproject', 'n_samples', 'biomes', 'experiment_type', 'pipeline_version'])
+
+# Iterate over the rows in df_unique_ids
+for _, row in study_ids.iterrows():
+    study_id = row['study_id']
+    
+    # Retrieve information for the current unique ID from the first row of df_original
+    info = df_analyses_wwt_mgnify_def[df_analyses_wwt_mgnify_def['study_id'] == study_id].iloc[0][['study_name', 'bioproject', 'n_samples', 'biomes', 'experiment_type', 'pipeline_version']]
+    
+    # Create a new row for the df with the study_id and extracted information
+    studies_wwt_shot_metag_assembly = studies_wwt_shot_metag_assembly.append({'study_id': study_id, **info}, ignore_index=True)
+# %%
+# Export the DataFrames to a CSV file
 df_analyses_wwt_mgnify_def.to_csv("Mgnify_analyses_wwt_shot_metag_assembly.csv", index=False)
+studies_wwt_shot_metag_assembly.to_csv("Mgnify_studies_wwt_shot_metag_assembly.csv", index=False)
