@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pandas = "*"
+numpy = "*"
+scipy = "*"
+plotnine = "*"
+jsonapi-client = "*"
+mg-toolkit = "*"
+requests = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.11"
