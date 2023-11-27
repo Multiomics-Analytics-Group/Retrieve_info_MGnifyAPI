@@ -7,9 +7,7 @@ name = "pypi"
 pandas = "*"
 numpy = "*"
 scipy = "*"
-plotnine = "*"
 jsonapi-client = "*"
-mg-toolkit = "*"
 requests = "*"
 
 [dev-packages]
