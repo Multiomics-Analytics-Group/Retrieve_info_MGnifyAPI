@@ -3,7 +3,7 @@
 # Author: Sebastian Ayala Ruano
 # Date: 27-11-2023
 # Description: This script retrieves the list of metagenomic analyses from MGnify for a given biome and 
-# data type (amplicon, metagenomic, metatranscriptomic, or assembly). The attributes retrived for the studies can be 
+# data type (amplicon, shotgun metagenomics, metatranscriptomic, or assembly). The attributes retrived for the studies can be 
 # modified in the script. The list of analyses and studies (including analyses information) are saved as CSV files.
 # The Get_metag_studies_fromMGnify.py script must be run first to obtain the list of studies for the biome.
 # Version: 2.0
@@ -14,6 +14,7 @@
 #%%
 import requests
 import pandas as pd
+import json
 
 # Define function to interact with the MGnify API
 def fetch_all_analyses(url, params):
@@ -84,6 +85,10 @@ params = {
 # Retrieve all analyses
 all_analysis_data = fetch_all_analyses(url, params)
 print("Request complete.")
+
+# Export the result of the request to a JSON file
+with open("../Results/Mgnify_analyses_wwt_shot_metag_assembly.json", "w") as outfile:
+    json.dump(all_analysis_data, outfile)
 # %%
 # Extract a list of accessions from the list of analysis data to verify that all analyses were retrieved
 analyses_id_list = [analysis["attributes"]["accession"] for analysis in all_analysis_data]
@@ -133,14 +138,14 @@ study_ids = pd.DataFrame(df_analyses_wwt_mgnify_def["study_id"].unique(), column
 study_ids = study_ids.dropna()
 
 # Create an empty DataFrame to store the extracted information
-studies_wwt_shot_metag_assembly = pd.DataFrame(columns=['study_id', 'study_name', 'bioproject', 'n_samples', 'biomes', 'experiment_type', 'pipeline_version'])
+studies_wwt_shot_metag_assembly = pd.DataFrame(columns=['study_id', 'study_name', 'bioproject', 'centre_name', 'n_samples', 'biomes', 'experiment_type', 'pipeline_version'])
 
 # Iterate over the rows in df_unique_ids
 for _, row in study_ids.iterrows():
     study_id = row['study_id']
 
     # Retrieve information for the current unique ID from the first row of df_original
-    info = df_analyses_wwt_mgnify_def[df_analyses_wwt_mgnify_def['study_id'] == study_id].iloc[0][['study_name', 'bioproject', 'n_samples', 'biomes', 'experiment_type', 'pipeline_version']]
+    info = df_analyses_wwt_mgnify_def[df_analyses_wwt_mgnify_def['study_id'] == study_id].iloc[0][['study_name', 'bioproject', 'centre_name', 'n_samples', 'biomes', 'experiment_type', 'pipeline_version']]
 
     # Create a new DataFrame with the study_id and extracted information
     study_data = pd.DataFrame({'study_id': [study_id], **info.to_dict()}, index=[0])

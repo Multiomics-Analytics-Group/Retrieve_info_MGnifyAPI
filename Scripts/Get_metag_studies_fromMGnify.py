@@ -14,6 +14,7 @@
 # Import libraries
 import requests
 import pandas as pd
+import json
 
 # Define function to interact with the MGnify API
 def fetch_all_studies(url, params):
@@ -71,6 +72,10 @@ params = {
 all_studies_data = fetch_all_studies(url, params)
 print("Request complete.")
 
+# Export the result of the request to a JSON file
+with open("Results/Mgnify_studies_wwt.json", "w") as outfile:
+    json.dump(all_studies_data, outfile)
+#%%
 # Extract the desired attributes and create a DataFrame
 study_list = []
 

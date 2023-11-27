@@ -9,7 +9,7 @@ Scripts to get information from MGnify studies and analyses for a given biome us
 Modify the scripts to change the biome of interest, the data types to include, and other attributes from the get requests to the MGnify API.
 
 ## **How to set up the environment to run the code?**
-I used [Pipenv][pipenv] to create a Python virtual environment, which allows the management of python libraries and their dependencies. Each Pipenv virtual environment has a `Pipfile` with the names and versions of libraries installed in the virtual environment, and a `Pipfile.lock`, a JSON file that contains versions of libraries and their dependencies.
+I used [Pipenv](https://pipenv.pypa.io/en/latest/) to create a Python virtual environment, which allows the management of python libraries and their dependencies. Each Pipenv virtual environment has a `Pipfile` with the names and versions of libraries installed in the virtual environment, and a `Pipfile.lock`, a JSON file that contains versions of libraries and their dependencies.
 
 To create a Python virtual environment with libraries and dependencies required for this project, you should clone this GitHub repository, open a terminal, move to the folder containing this repository, and run the following commands:
 
