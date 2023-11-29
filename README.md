@@ -3,8 +3,8 @@ Scripts to get information from MGnify studies and analyses for a given biome us
 
 ## **How to use the scripts?**
 1. Set up a Python virtual environment and install required libraries (specified in the `Pipfile` or `requirements.txt` file).
-2. Run `Get_metag_studies_fromMGnify.py` to fetch a list of metagenomic studies for a given biome, without information about the data types (amplicon, shotgun metagenomics, metatranscriptomic, or assembly).
-3. Execute `Get_metag_analyses_fromMGnify.py` to retrieve a list of metagenomic analyses from all studies in the desired biome, with data type information. The script also generates a file that filters studies based on their data type.
+2. Run `Scripts/Get_metag_studies_info_fromMGnify.py` to fetch a list of metagenomic studies for a given biome, without information about the data types (amplicon, shotgun metagenomics, metatranscriptomic, or assembly).
+3. Execute `Scripts/Get_metag_analyses_info_fromMGnify.py` to retrieve a list of metagenomic analyses from all studies in the desired biome, with data type information. The script also generates a file that filters studies based on their data type.
 
 Modify the scripts to change the biome of interest, the data types to include, and other attributes from the get requests to the MGnify API.
 
@@ -42,7 +42,7 @@ The main files and directories of this repository are:
 |File|Description|
 |:-:|---|
 |[Scripts/](Scripts/)|Folder with Python scripts to retrive lists of metagenomic studies and anaylises from MGnify for a given biome|
-|[Results/](Results/)|Folder to save the resulting CSV files|
+|[Output/](Results/)|Folder to save the resulting CSV files|
 |[Pipfile](Pipfile)|File with names and versions of packages installed in the virtual environment|
 |[requeriments.txt](requeriments.txt)|File with names and versions of packages installed in the virtual environment|
 |[Pipfile.lock](Pipfile.lock)|Json file that contains versions of packages, and dependencies required for each package|
