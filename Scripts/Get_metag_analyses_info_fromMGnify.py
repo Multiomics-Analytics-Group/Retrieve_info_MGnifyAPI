@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------------------------------
-# Script: Get_metag_analyses_fromMGnify.py
+# Script: Get_metag_analyses_info_fromMGnify.py
 # Author: Sebastian Ayala Ruano
 # Date: 27-11-2023
 # Description: This script retrieves the list of metagenomic analyses from MGnify for a given biome and 
@@ -8,8 +8,8 @@
 # The Get_metag_studies_fromMGnify.py script must be run first to obtain the list of studies for the biome.
 # Version: 2.0
 # License: MIT License
-# Usage: python Get_metag_analyses_fromMGnify.py
-# References: https://github.com/sayalaruano/Retrieve_info_MGnifyAPI/blob/main/Scripts/Get_metag_analyses_fromMGnify.py
+# Usage: python Get_metag_analyses_info_fromMGnify.py
+# References: https://github.com/sayalaruano/Retrieve_info_MGnifyAPI/blob/main/Scripts/Get_metag_analyses_info_fromMGnify.py
 # ------------------------------------------------------------------------------------------------------
 #%%
 import requests
@@ -87,7 +87,7 @@ all_analysis_data = fetch_all_analyses(url, params)
 print("Request complete.")
 
 # Export the result of the request to a JSON file
-with open("../Results/Mgnify_analyses_wwt_shot_metag_assembly.json", "w") as outfile:
+with open("../Output/Mgnify_analyses_wwt_shot_metag_assembly.json", "w") as outfile:
     json.dump(all_analysis_data, outfile)
 # %%
 # Extract a list of accessions from the list of analysis data to verify that all analyses were retrieved
@@ -122,7 +122,7 @@ for analysis in all_analysis_data:
 df_analyses_wwt_mgnify = pd.DataFrame(data_list)
 #%%
 # Import file with attributes from the wwt studies, obtained with the script Get_metag_studies_fromMGnify.py
-study_data_df = pd.read_csv("../Results/Mgnify_studies_wwt.csv")
+study_data_df = pd.read_csv("../Output/Mgnify_studies_wwt.csv")
 
 # Join the two DataFrames using the index
 df_analyses_wwt_mgnify_def = df_analyses_wwt_mgnify.merge(study_data_df, on="study_id", how="left")
@@ -155,7 +155,7 @@ for _, row in study_ids.iterrows():
 
 # %%
 # Export the DataFrames to a CSV file
-df_analyses_wwt_mgnify_def.to_csv("../Results/Mgnify_analyses_wwt_shot_metag_assembly.csv", index=False)
-studies_wwt_shot_metag_assembly.to_csv("../Results/Mgnify_studies_wwt_shot_metag_assembly.csv", index=False)
+df_analyses_wwt_mgnify_def.to_csv("../Output/Mgnify_analyses_wwt_shot_metag_assembly.csv", index=False)
+studies_wwt_shot_metag_assembly.to_csv("../Output/Mgnify_studies_wwt_shot_metag_assembly.csv", index=False)
 
-print("Data export complete. CSV files saved in the 'Results' folder.")
+print("Data export complete. CSV files saved in the 'Output' folder.")

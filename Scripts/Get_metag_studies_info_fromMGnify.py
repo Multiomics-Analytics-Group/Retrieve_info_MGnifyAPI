@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------------------------------
-# Script: Get_metag_studies_fromMGnify.py
+# Script: Get_metag_studies_info_fromMGnify.py
 # Author: Sebastian Ayala Ruano
 # Date: 25-11-2023
 # Description: This script retrieves the list of metagenomic studies from MGnify for a given biome. 
@@ -7,8 +7,8 @@
 # The list of studies is saved as a CSV file.
 # Version: 2.0
 # License: MIT License
-# Usage: python Get_metag_studies_fromMGnify.py
-# References: https://github.com/sayalaruano/Retrieve_info_MGnifyAPI/blob/main/Scripts/Get_metag_studies_fromMGnify.py
+# Usage: python Get_metag_studies_info_fromMGnify.py
+# References: https://github.com/sayalaruano/Retrieve_info_MGnifyAPI/blob/main/Scripts/Get_metag_studies_info_fromMGnify.py
 # ------------------------------------------------------------------------------------------------------
 #%%
 # Import libraries
@@ -73,7 +73,7 @@ all_studies_data = fetch_all_studies(url, params)
 print("Request complete.")
 
 # Export the result of the request to a JSON file
-with open("Results/Mgnify_studies_wwt.json", "w") as outfile:
+with open("../Output/Mgnify_studies_wwt.json", "w") as outfile:
     json.dump(all_studies_data, outfile)
 #%%
 # Extract the desired attributes and create a DataFrame
@@ -94,6 +94,6 @@ for study in all_studies_data:
 df_studies_wwt_mgnify = pd.DataFrame(study_list)
 #%%
 # Export the DataFrame to a CSV file
-df_studies_wwt_mgnify.to_csv('../Results/Mgnify_studies_wwt.csv', index=False)
+df_studies_wwt_mgnify.to_csv('../Output/Mgnify_studies_wwt.csv', index=False)
 
-print("Data export complete. CSV file saved in the 'Results' folder.")
+print("Data export complete. CSV file saved in the 'Output' folder.")
