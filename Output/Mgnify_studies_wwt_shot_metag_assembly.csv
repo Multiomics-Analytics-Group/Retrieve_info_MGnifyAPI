@@ -1,27 +1,14 @@
-﻿study_id,study_name,bioproject,centre_name,n_samples,biomes,experiment_type,pipeline_version
-MGYS00001382,MiDAS DNA Extraction metagenomics and metatranscriptomics,PRJEB8669,AALBORG UNIVERSITY,6,root:Engineered:Wastewater:Activated Sludge,metagenomic,3.0
-MGYS00001392,Retrieval of Commamox genomes using metagenomics,PRJEB10139,AALBORG UNIVERSITY,14,root:Engineered:Wastewater:Industrial wastewater:Petrochemical,metagenomic,3.0
-MGYS00001418,Retrieval of Commamox genomes using metagenomics,PRJEB10138,AALBORG UNIVERSITY,2,root:Engineered:Wastewater:Industrial wastewater:Petrochemical,metagenomic,3.0
-MGYS00001542,Metagenomes of Danish EBPR WWTPs,PRJEB8087,AALBORG UNIVERSITY,17,root:Engineered:Wastewater:Nutrient removal:Biological phosphorus removal:Activated sludge,metagenomic,3.0
-MGYS00000606,Nitrifying reactor with FNA treatment,PRJEB12604,"Advanced Water Management Centre, University of Queensland.",1,root:Engineered:Wastewater:Nutrient removal:Nitrogen removal,metagenomic,2.0
-MGYS00000597,High throughput analysis of class 1 integron gene casettes in wastewater environments,PRJEB12330,ARO,16,root:Engineered:Wastewater:Water and sludge,metagenomic,2.0
-MGYS00001391,Genomic and in situ investigations of the novel uncultured Chloroflexi associated with 0092 morphotype filamentous bulking in activated sludge,PRJEB11413,"Department of Biotechnology, Chemistry and Environmental Engineering, Aalborg University",1,root:Engineered:Wastewater:Activated Sludge,metagenomic,3.0
-MGYS00003139,Global surveillance of antimicrobial resistance - Batch June 2017,PRJEB27621,DTU-GE,181,root:Engineered:Wastewater,metagenomic,4.1
-MGYS00001312,Global surveillance of infectious diseases and antimicrobial resistance from sewage,PRJEB13831,DTU-GE,179,root:Engineered:Wastewater:Water and sludge,metagenomic,4.1
-MGYS00001135,Local surveillance of infectious diseases and antimicrobial resistance from sewage,PRJEB13832,DTU-GE,65,root:Engineered:Wastewater:Water and sludge,metagenomic,2.0
-MGYS00001910,The influence of sludge retention time on the  expressed functional diversity of and biotransformation rates of micropollutants performed by a community originating from wastewater activated sludge,PRJEB22087,EAWAG,170,root:Engineered:Wastewater:Activated Sludge,metatranscriptomic,4.1
-MGYS00005055,Resistflow-NFC-DNA data,PRJEB28728,EAWAG,24,root:Engineered:Wastewater:Water and sludge,metagenomic,4.1
-MGYS00005056,Resistflow-INF-DNA data,PRJEB28815,EAWAG,24,root:Engineered:Wastewater,metagenomic,4.1
-MGYS00005058,Resistflow-EFF-DNA data,PRJEB30264,EAWAG,24,root:Engineered:Wastewater,metagenomic,4.1
-MGYS00000777,Influence of biodiversity on the functionality of activated sludge communities,PRJEB13232,EAWAG,30,root:Engineered:Wastewater:Industrial wastewater,metagenomic,2.0
-MGYS00000823,Studying the presence and selection of antibiotic resistance genes,PRJEB13233,EAWAG,36,root:Engineered:Wastewater:Activated Sludge,metatranscriptomic,2.0
-MGYS00002316,EMG produced TPA metagenomics assembly of the Active sludge microbial communities of municipal wastewater-treating anaerobic digesters from China - AD_SCU002_MetaG metagenome (activated sludge metagenome) data set.,PRJEB24109,EMBL-EBI,1,root:Engineered:Wastewater:Industrial wastewater,assembly,4.1
-MGYS00002058,EMG produced TPA metagenomics assembly of the Shotgun sequencing on multiple activated sludge samples (activated sludge metagenome) data set,PRJEB22550,EMBL-EBI,12,root:Engineered:Wastewater:Activated Sludge,assembly,4.1
+study_id,study_name,bioproject,centre_name,n_samples,biomes,experiment_type,pipeline_version
 MGYS00005614,EMG produced TPA metagenomics assembly of PRJEB34410 data set (Secrets of the hospital underbelly: abundance of antimicrobial resistance genes in hospital wastewater reflects hospital antimicrobial use and inpatient length of stay).,PRJEB39978,EMG,8,root:Engineered:Wastewater,assembly,5.0
 MGYS00005435,EMG produced TPA metagenomics assembly of the PRJNA472060 data set (Reclaimed water Metagenome).,PRJEB32216,EMG,5,root:Engineered:Wastewater:Water and sludge,assembly,5.0
 MGYS00005769,EMG produced TPA metagenomics assembly of PRJNA479723 data set (Nanopore metagenomics).,PRJEB42552,EMG,11,root:Engineered:Wastewater:Water and sludge,assembly,5.0
 MGYS00005802,EMG produced TPA metagenomics assembly of PRJEB8087 data set (Metagenomes of Danish EBPR WWTPs).,PRJEB43967,EMG,6,root:Engineered:Wastewater:Nutrient removal:Biological phosphorus removal:Activated sludge,assembly,5.0
 MGYS00005846,EMG produced TPA metagenomics assembly of PRJEB27054 data set (Global surveillance of antimicrobial resistance).,PRJEB47494,EMG,110,root:Engineered:Wastewater:Water and sludge,assembly,5.0
+MGYS00002316,EMG produced TPA metagenomics assembly of the Active sludge microbial communities of municipal wastewater-treating anaerobic digesters from China - AD_SCU002_MetaG metagenome (activated sludge metagenome) data set.,PRJEB24109,EMBL-EBI,1,root:Engineered:Wastewater:Industrial wastewater,assembly,4.1
+MGYS00002383,Antibiotic manufacturing effluent enriches resistance genes and alter the structure of microbial communities,PRJEB26809,UNIVERSITY OF GOTHENBURG,6,root:Engineered:Wastewater:Activated Sludge,metagenomic,4.1
+MGYS00001910,The influence of sludge retention time on the  expressed functional diversity of and biotransformation rates of micropollutants performed by a community originating from wastewater activated sludge,PRJEB22087,EAWAG,170,root:Engineered:Wastewater:Activated Sludge,metatranscriptomic,4.1
+MGYS00003139,Global surveillance of antimicrobial resistance - Batch June 2017,PRJEB27621,DTU-GE,181,root:Engineered:Wastewater,metagenomic,4.1
+MGYS00001312,Global surveillance of infectious diseases and antimicrobial resistance from sewage,PRJEB13831,DTU-GE,179,root:Engineered:Wastewater:Water and sludge,metagenomic,4.1
 MGYS00003379,EMG produced TPA metagenomics assembly of the Active sludge microbial communities of municipal wastewater-treating anaerobic digesters from USA - AD_UKC028_MetaG metagenome (activated sludge metagenome) data set.,PRJEB28884,EMG,1,root:Engineered:Wastewater:Activated Sludge,assembly,4.1
 MGYS00003380,EMG produced TPA metagenomics assembly of the Active sludge microbial communities of municipal wastewater-treating anaerobic digesters from USA - AD_UKC048_MetaG metagenome (activated sludge metagenome) data set.,PRJEB28885,EMG,1,root:Engineered:Wastewater:Activated Sludge,assembly,4.1
 MGYS00003395,EMG produced TPA metagenomics assembly of the Active sludge microbial communities of municipal wastewater-treating anaerobic digesters from Hong Kong - AD_UKC111_MetaG metagenome (activated sludge metagenome) data set.,PRJEB28919,EMG,1,root:Engineered:Wastewater:Activated Sludge,assembly,4.1
@@ -37,6 +24,8 @@ MGYS00003623,EMG produced TPA metagenomics assembly of the Active sludge microbi
 MGYS00003646,EMG produced TPA metagenomics assembly of the Stanley AS Metagenome (activated sludge metagenome) data set.,PRJEB29022,EMG,1,root:Engineered:Wastewater:Activated Sludge,assembly,4.1
 MGYS00003649,EMG produced TPA metagenomics assembly of the Initial activated sewage sludge GCZ12 Metagenome (activated sludge metagenome) data set.,PRJEB29094,EMG,1,root:Engineered:Wastewater:Activated Sludge,assembly,4.1
 MGYS00003652,EMG produced TPA metagenomics assembly of the Anammox enrichment reactor metagenome () data set.,PRJEB29101,EMG,2,root:Engineered:Wastewater:Activated Sludge,assembly,4.1
+MGYS00003674,wastewater Metagenome,PRJNA506137,Jeju National University,2,root:Engineered:Wastewater:Water and sludge,metagenomic,4.1
+MGYS00004715,KHAJOD WASTE WATER,PRJEB31985,Veer Narmad South Gujarat University,1,root:Engineered:Wastewater,metatranscriptomic,4.1
 MGYS00004765,EMG produced TPA metagenomics assembly of the Active sludge microbial communities of municipal wastewater-treating anaerobic digesters from USA - AD_UKC075_MetaG metagenome (activated sludge metagenome) data set.,PRJEB29351,EMG,1,root:Engineered:Wastewater:Activated Sludge,assembly,4.1
 MGYS00004766,EMG produced TPA metagenomics assembly of the Active sludge microbial communities of municipal wastewater-treating anaerobic digesters from Japan - AD_JPNNA7_MetaG metagenome (activated sludge metagenome) data set.,PRJEB29352,EMG,1,root:Engineered:Wastewater:Activated Sludge,assembly,4.1
 MGYS00004767,EMG produced TPA metagenomics assembly of the Active sludge microbial communities of municipal wastewater-treating anaerobic digesters from Hong Kong - AD_UKC115_MetaG metagenome (activated sludge metagenome) data set.,PRJEB29353,EMG,1,root:Engineered:Wastewater:Activated Sludge,assembly,4.1
@@ -95,26 +84,34 @@ MGYS00005006,EMG produced TPA metagenomics assembly of the activated sludge Meta
 MGYS00005011,EMG produced TPA metagenomics assembly of the activated sludge metagenome Raw sequence reads (activated sludge metagenome) data set.,PRJEB29850,EMG,3,root:Engineered:Wastewater:Activated Sludge,assembly,4.1
 MGYS00005016,"EMG produced TPA metagenomics assembly of the An overview of the virome in wastwater in Brasilia, Brazil by High-throughput sequencing () data set.",PRJEB29852,EMG,4,root:Engineered:Wastewater,assembly,4.1
 MGYS00005025,EMG produced TPA metagenomics assembly of the BPA degrading microbial community Raw sequence reads (BPA degrading microbial community) data set.,PRJEB29895,EMG,10,root:Engineered:Wastewater:Activated Sludge,assembly,4.1
+MGYS00002058,EMG produced TPA metagenomics assembly of the Shotgun sequencing on multiple activated sludge samples (activated sludge metagenome) data set,PRJEB22550,EMBL-EBI,12,root:Engineered:Wastewater:Activated Sludge,assembly,4.1
 MGYS00005035,EMG produced TPA metagenomics assembly of the samples from sewage Raw sequence reads (wastewater metagenome) data set.,PRJEB28724,EMG,6,root:Engineered:Wastewater,assembly,4.1
+MGYS00005046,Palazzo_Ducale_SS,PRJEB26542,University of Sassari,2,root:Engineered:Wastewater,metagenomic,4.1
+MGYS00005055,Resistflow-NFC-DNA data,PRJEB28728,eawag,24,root:Engineered:Wastewater:Water and sludge,metagenomic,4.1
+MGYS00005056,Resistflow-INF-DNA data,PRJEB28815,eawag,24,root:Engineered:Wastewater,metagenomic,4.1
+MGYS00005058,Resistflow-EFF-DNA data,PRJEB30264,eawag,24,root:Engineered:Wastewater,metagenomic,4.1
 MGYS00005279,"EMG produced TPA metagenomics assembly of the Wastewater bioreactor microbial communities from Cape Town, South Africa - Thiocy_expt_500_biof metagenome (wastewater metagenome) data set.",PRJEB29847,EMG,1,root:Engineered:Wastewater,assembly,4.1
 MGYS00005418,EMG produced TPA metagenomics assembly of the PRJEB13832 data set (Local surveillance of infectious diseases and antimicrobial resistance from sewage).,PRJEB33180,EMG,54,root:Engineered:Wastewater:Water and sludge,assembly,4.1
 MGYS00005431,EMG produced TPA metagenomics assembly of the PRJEB22104 data set (Unusual ecophysiology of Candidate phylum Acetothermia bacteria associated with anaerobic digesters revealed by complete genome sequencing and advanced in situ microscopy).,PRJEB33270,EMG,6,root:Engineered:Wastewater,assembly,4.1
-MGYS00000648,"sewage sludge soil samples were subjected to chitosan treatment, the microbiodiversity and gene diversity were unknown.",PRJEB13220,Food biotechnology,2,root:Engineered:Wastewater:Water and sludge,metagenomic,2.0
-MGYS00001277,Shotgun sequencing on multiple activated sludge samples,PRJNA288131,INGEBI-CONICET,12,root:Engineered:Wastewater:Activated Sludge,metagenomic,3.0
-MGYS00001903,wastewater metagenomics Orsay site 01,PRJEB18607,INSTITUT DE GENETIQUE ET MICROBIOLOGIE,1,root:Engineered:Wastewater,metagenomic,3.0
 MGYS00001976,Metagenome Analysis of palm oil mill effluent,PRJEB22150,International Islamic University of Malaysia,1,root:Engineered:Wastewater:Industrial wastewater:Agricultural wastewater,assembly,4.0
-MGYS00003674,wastewater Metagenome,PRJNA506137,Jeju National University,2,root:Engineered:Wastewater:Water and sludge,metagenomic,4.1
-MGYS00001453,Metagenomic analysis of anaerobic reactors for wastewater treatment,PRJEB19359,KU LEUVEN,3,root:Engineered:Wastewater:Nutrient removal:Dissolved organics (anaerobic),metagenomic,3.0
-MGYS00000423,"Metagenomic Characterisation of Opaque Beer Industry Wastewater, Fairbridge",PRJEB7844,NUST,1,root:Engineered:Wastewater:Water and sludge,metagenomic,1.0
-MGYS00000425,"Metagenomic Characterisation of Opaque Beer Industry Wastewater, Zvishavane",PRJEB7850,NUST,1,root:Engineered:Wastewater:Water and sludge,metagenomic,1.0
-MGYS00000555,Wastewater metagenomics.,PRJEB11494,"School of Computing Science, Newcastle University",1,root:Engineered:Wastewater,metagenomic,2.0
+MGYS00001277,Shotgun sequencing on multiple activated sludge samples,PRJNA288131,INGEBI-CONICET,12,root:Engineered:Wastewater:Activated Sludge,metagenomic,3.0
+MGYS00001382,MiDAS DNA Extraction metagenomics and metatranscriptomics,PRJEB8669,AALBORG UNIVERSITY,6,root:Engineered:Wastewater:Activated Sludge,metagenomic,3.0
 MGYS00001389,Metagenomic study of the microbial genes abundance in treated palm oil mill effluent,PRJEB1658,SVSB,1,root:Engineered:Wastewater:Nutrient removal:Dissolved organics (anaerobic),metagenomic,3.0
+MGYS00001391,Genomic and in situ investigations of the novel uncultured Chloroflexi associated with 0092 morphotype filamentous bulking in activated sludge,PRJEB11413,"Department of Biotechnology, Chemistry and Environmental Engineering, Aalborg University",1,root:Engineered:Wastewater:Activated Sludge,metagenomic,3.0
+MGYS00001392,Retrieval of Commamox genomes using metagenomics,PRJEB10139,AALBORG UNIVERSITY,14,root:Engineered:Wastewater:Industrial wastewater:Petrochemical,metagenomic,3.0
+MGYS00001418,Retrieval of Commamox genomes using metagenomics,PRJEB10138,AALBORG UNIVERSITY,2,root:Engineered:Wastewater:Industrial wastewater:Petrochemical,metagenomic,3.0
+MGYS00001453,Metagenomic analysis of anaerobic reactors for wastewater treatment,PRJEB19359,KU LEUVEN,3,root:Engineered:Wastewater:Nutrient removal:Dissolved organics (anaerobic),metagenomic,3.0
+MGYS00001542,Metagenomes of Danish EBPR WWTPs,PRJEB8087,AALBORG UNIVERSITY,17,root:Engineered:Wastewater:Nutrient removal:Biological phosphorus removal:Activated sludge,metagenomic,3.0
 MGYS00001566,Black Water Project,PRJEB19684,the Netherlands Institute of Ecology,36,root:Engineered:Wastewater,metagenomic,3.0
 MGYS00001851,Heterotrophic methanogens dominate in anaerobic digesters,PRJDB5067,TOKYO_PHARM,6,root:Engineered:Wastewater:Nutrient removal:Dissolved organics (anaerobic),metatranscriptomic,3.0
-MGYS00002383,Antibiotic manufacturing effluent enriches resistance genes and alter the structure of microbial communities,PRJEB26809,UNIVERSITY OF GOTHENBURG,6,root:Engineered:Wastewater:Activated Sludge,metagenomic,4.1
+MGYS00001903,wastewater metagenomics Orsay site 01,PRJEB18607,INSTITUT DE GENETIQUE ET MICROBIOLOGIE,1,root:Engineered:Wastewater,metagenomic,3.0
+MGYS00000555,Wastewater metagenomics.,PRJEB11494,"School of Computing Science, Newcastle University",1,root:Engineered:Wastewater,metagenomic,2.0
+MGYS00000597,High throughput analysis of class 1 integron gene casettes in wastewater environments,PRJEB12330,ARO,16,root:Engineered:Wastewater:Water and sludge,metagenomic,2.0
+MGYS00000606,Nitrifying reactor with FNA treatment,PRJEB12604,"Advanced Water Management Centre, University of Queensland.",1,root:Engineered:Wastewater:Nutrient removal:Nitrogen removal,metagenomic,2.0
+MGYS00000648,"sewage sludge soil samples were subjected to chitosan treatment, the microbiodiversity and gene diversity were unknown.",PRJEB13220,Food biotechnology,2,root:Engineered:Wastewater:Water and sludge,metagenomic,2.0
+MGYS00000777,Influence of biodiversity on the functionality of activated sludge communities,PRJEB13232,EAWAG,30,root:Engineered:Wastewater:Industrial wastewater,metagenomic,2.0
+MGYS00000823,Studying the presence and selection of antibiotic resistance genes,PRJEB13233,EAWAG,36,root:Engineered:Wastewater:Activated Sludge,metatranscriptomic,2.0
 MGYS00001110,Metagenomic characterization of three Swedish sewage treatment plants,PRJEB14051,UNIVERSITY OF GOTHENBURG,70,"root:Engineered:Wastewater:Activated Sludge, root:Engineered:Wastewater:Industrial wastewater",metagenomic,2.0
-MGYS00005046,Palazzo_Ducale_SS,PRJEB26542,University of Sassari,2,root:Engineered:Wastewater,metagenomic,4.1
-MGYS00004715,KHAJOD WASTE WATER,PRJEB31985,Veer Narmad South Gujarat University,1,root:Engineered:Wastewater,metatranscriptomic,4.1
-,,,,,,,
-,,,,,,,
-,,,,,,,
+MGYS00001135,Local surveillance of infectious diseases and antimicrobial resistance from sewage,PRJEB13832,DTU-GE,65,root:Engineered:Wastewater:Water and sludge,metagenomic,2.0
+MGYS00000423,"Metagenomic Characterisation of Opaque Beer Industry Wastewater, Fairbridge",PRJEB7844,NUST,1,root:Engineered:Wastewater:Water and sludge,metagenomic,1.0
+MGYS00000425,"Metagenomic Characterisation of Opaque Beer Industry Wastewater, Zvishavane",PRJEB7850,NUST,1,root:Engineered:Wastewater:Water and sludge,metagenomic,1.0
