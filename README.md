@@ -3,7 +3,7 @@ Scripts to get information and results from MGnify studies for a given biome and
 
 ## **How to use the scripts?**
 1. Set up a Python virtual environment and install required libraries (specified in the `Pipfile` or `requirements.txt` file).
-2. Use the functions from `Scripts/Functions_getInfo_MGnify_studies_analyses.py` to retrieve a summary of MGnify studies anad analyses for a given biome and data type (amplicon, shotgun metagenomics, metatranscriptomic, or assembly). The attributes of the api requests can be modified in the script. See an example of how to use these functions in the `Scripts/example_main_get_summary_studies_and_analyses.py` file.
+2. Use the functions from `Scripts/Functions_getInfo_MGnify_studies_analyses.py` to retrieve a summary of MGnify studies and analyses for a given biome and data type (amplicon, shotgun metagenomics, metatranscriptomic, or assembly). The attributes of the api requests can be modified in the script. See an example of how to use these functions in the `Scripts/example_main_get_summary_studies_and_analyses.py` file.
 3. Use the functions from `Scripts/Functions_get_results_from_MGnifystudy.py` to obtain abundance and functional tables, as well as other results for a MGnify study. See an example of how to use these functions in the `Scripts/example_main_get_results_from_MGnifystudy.py` file.
 
 Modify the scripts to change the biome of interest, the data types to include, the desired study, and other attributes from the get requests to the MGnify API.
@@ -30,14 +30,20 @@ Alternatively, you can create a conda virtual environment with the required libr
 
 ```bash
 # Create the conda virtual environment
-$ conda env create --name retrieve_info_MGnifyAPI --file requirements.txt
+$ conda create --name retrieve_info_MGnifyAPI python=3.11
 
 # Activate the conda virtual environment
 $ conda activate retrieve_info_MGnifyAPI
+
+# Install pip
+$ conda install pip
+
+# Install libraries and dependencies with pip 
+$ pip install -r requirements.txt
 ```
 
 ## **Obtain raw result files for a MGnify study**
-The `bulk_download` option of the `mg-toolkit Python package` provides a command line interface to download raw result files for a MGnify study. For instance, to download the raw results files for the taxonomic analysis of the study [MGYS00001392](https://www.ebi.ac.uk/metagenomics/studies/MGYS00001392) obtained with the pipeline 5 or greater, you can run the following command:
+The `bulk_download` option of the `mg-toolkit` Python package provides a command line interface to download raw result files for a MGnify study. For instance, to download the raw results files for the taxonomic analysis of the study [MGYS00001392](https://www.ebi.ac.uk/metagenomics/studies/MGYS00001392) obtained with the pipeline 5 or greater, you can run the following command:
 
 ```bash
 $ mg-toolkit bulk_download -a MGYS00001392 --result_group taxonomic_analysis_unite -o Output/
