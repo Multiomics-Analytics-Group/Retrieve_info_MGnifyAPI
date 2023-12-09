@@ -48,8 +48,8 @@ if summary_results_study:
         download_and_save_MGnifystudy_results(download_link, file_name, study_directory)
     
     # Export the result of the original request to a JSON file and save it in the study directory
-    request_file_name = f"{study_accession}_results_MGnify_study.json"
-    request_file_path = os.path.join(study_directory, file_name)
+    request_file_name = f"{study_accession}_results_info.json"
+    request_file_path = os.path.join(study_directory, request_file_name)
     with open(request_file_path, "w") as outfile:
         json.dump(summary_results_study, outfile)
 else:
