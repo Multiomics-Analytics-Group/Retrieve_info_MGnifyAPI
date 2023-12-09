@@ -11,7 +11,7 @@
 # License: MIT License
 # Usage: call the functions from external scripts. See example_main.py
 # Warning: The script relies on the MGnify API, which could have high traffic. If the script fails, try again later.
-# References: https://github.com/sayalaruano/Retrieve_info_MGnifyAPI/blob/main/Scripts/Functions_getInfo_MGnify_studies_analyses.py
+# References: https://github.com/Multiomics-Analytics-Group/Retrieve_info_MGnifyAPI/blob/main/Scripts/Functions_getInfo_MGnify_studies_analyses.py
 # ------------------------------------------------------------------------------------------------------
 #%%
 # Import libraries

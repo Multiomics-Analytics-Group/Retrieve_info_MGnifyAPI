@@ -8,7 +8,7 @@
 # License: MIT License
 # Usage: call the functions from external scripts. See example_main_get_results_from_MGnifystudy.py
 # Warning: The script relies on the MGnify API, which could have high traffic. If the script fails, try again later.
-# References: https://github.com/sayalaruano/Retrieve_info_MGnifyAPI/blob/main/Scripts/example_main_get_results_from_MGnifystudy.py
+# References: https://github.com/Multiomics-Analytics-Group/Retrieve_info_MGnifyAPI/blob/main/Scripts/example_main_get_results_from_MGnifystudy.py
 # ------------------------------------------------------------------------------------------------------
 import os
 import requests
@@ -27,6 +27,7 @@ def get_results_info_from_MGnifystudy(study_accession):
     if response.status_code == 200:
         results_MGnify_study = response.json()
         print("GET request successful.")
+
         return results_MGnify_study
     else:
         print(f"Error: {response.status_code}")

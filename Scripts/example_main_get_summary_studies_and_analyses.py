@@ -7,7 +7,7 @@
 # License: MIT License
 # Usage: python example_main_get_summary_studies_and_analyses.py
 # Warning: The external script relies on the MGnify API, which could have high traffic. If the script fails, try again later.
-# References: https://github.com/sayalaruano/Retrieve_info_MGnifyAPI/blob/main/Scripts/example_main_get_summary_studies_and_analyses.py
+# References: https://github.com/Multiomics-Analytics-Group/Retrieve_info_MGnifyAPI/blob/main/Scripts/example_main_get_summary_studies_and_analyses.py
 # ------------------------------------------------------------------------------------------------------------------------------------
 # Import external function
 from Functions_getInfo_MGnify_studies_analyses import get_studies_and_analyses_summary
