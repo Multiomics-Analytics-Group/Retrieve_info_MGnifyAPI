@@ -29,6 +29,8 @@ for sample in samples_metadata:
     sample_list.append({
         "sample_id": sample["id"],
         "sample_name": attributes["sample-name"],
+        "biosample": attributes["biosample"],
+        "sample_description": attributes["sample-desc"],
         "latitude": attributes["latitude"],
         "longitude": attributes["longitude"],
         "geolocation": attributes["geo-loc-name"],
