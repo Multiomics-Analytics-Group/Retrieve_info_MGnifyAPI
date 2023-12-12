@@ -26,7 +26,8 @@ samples_metadata_df = pd.json_normalize(samples_metadata["data"])
 
 # Select the columns of interest
 columns = ["id", "attributes.sample-name", "attributes.latitude", "attributes.longitude", 
-           "attributes.geo-loc-name", "attributes.environment-biome"]
+           "attributes.geo-loc-name", "attributes.environment-biome", "attributes.environment-feature",
+           "attributes.environment-material"]
 samples_metadata_df = samples_metadata_df[columns]
 
 # Rename columns
@@ -34,6 +35,8 @@ samples_metadata_df = samples_metadata_df.rename(columns={"attributes.sample-nam
                                     "attributes.latitude": "latitude",
                                     "attributes.longitude":"longitude",
                                     "attributes.geo-loc-name":"geolocation",
-                                    "attributes.environment-biome":"biome"})
+                                    "attributes.environment-biome":"biome",
+                                    "attributes.environment-feature":"biome_feature",
+                                    "attributes.environment-material":"biome_material"})
 # Export the dataframe to a CSV file
 samples_metadata_df.to_csv(f"../Output/{study_accession}_samples_metadata.csv", index=False)
