@@ -21,22 +21,24 @@ samples_metadata = get_samples_metadata_from_MGnifystudy(study_accession)
 with open(f"../Output/{study_accession}_samples_metadata.json", "w") as outfile:
     json.dump(samples_metadata, outfile)
 
-# Convert json to pandas dataframe
-samples_metadata_df = pd.json_normalize(samples_metadata["data"])
+# Extract the desired attributes and create a DataFrame
+sample_list = []
 
-# Select the columns of interest
-columns = ["id", "attributes.sample-name", "attributes.latitude", "attributes.longitude", 
-           "attributes.geo-loc-name", "attributes.environment-biome", "attributes.environment-feature",
-           "attributes.environment-material"]
-samples_metadata_df = samples_metadata_df[columns]
+for sample in samples_metadata:
+    attributes = sample["attributes"]
+    sample_list.append({
+        "sample_id": sample["id"],
+        "sample_name": attributes["sample-name"],
+        "latitude": attributes["latitude"],
+        "longitude": attributes["longitude"],
+        "geolocation": attributes["geo-loc-name"],
+        "biome": attributes["environment-biome"],
+        "biome_feature": attributes["environment-feature"],
+        "biome_material": attributes["environment-material"],
+    })
 
-# Rename columns
-samples_metadata_df = samples_metadata_df.rename(columns={"attributes.sample-name": "sample_name",
-                                    "attributes.latitude": "latitude",
-                                    "attributes.longitude":"longitude",
-                                    "attributes.geo-loc-name":"geolocation",
-                                    "attributes.environment-biome":"biome",
-                                    "attributes.environment-feature":"biome_feature",
-                                    "attributes.environment-material":"biome_material"})
+# Create a DataFrame from the list of dictionaries
+samples_metadata_df = pd.DataFrame(sample_list)
+
 # Export the dataframe to a CSV file
 samples_metadata_df.to_csv(f"../Output/{study_accession}_samples_metadata.csv", index=False)

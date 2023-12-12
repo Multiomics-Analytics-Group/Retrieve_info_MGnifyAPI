@@ -1,4 +1,4 @@
-id,sample_name,latitude,longitude,geolocation,biome,biome_feature,biome_material
+sample_id,sample_name,latitude,longitude,geolocation,biome,biome_feature,biome_material
 ERS805486,MBR Sludge,57.05,9.8654,Denmark,wastewater treatment plant,wastewater treatment plant,activated sludge
 ERS805487,MBR Sludge,57.05,9.8654,Denmark,wastewater treatment plant,wastewater treatment plant,activated sludge
 ERS805488,MBR Sludge,57.05,9.8654,Denmark,wastewater treatment plant,wastewater treatment plant,activated sludge

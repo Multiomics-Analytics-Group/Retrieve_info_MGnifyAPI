@@ -100,7 +100,7 @@ def get_studies_and_analyses_summary(biome_name, experiment_type):
     # Create a DataFrame from the list of dictionaries
     df_studies_mgnify = pd.DataFrame(study_list)
 
-        # Set the URL for the GET request to retrieve all analyses
+    # Set the URL for the GET request to retrieve all analyses
     url = "https://www.ebi.ac.uk/metagenomics/api/v1/analyses"
 
     # Set the query parameters for the GET request

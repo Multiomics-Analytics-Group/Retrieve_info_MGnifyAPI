@@ -18,15 +18,41 @@ def get_samples_metadata_from_MGnifystudy(study_accession):
     
     base_url = "https://www.ebi.ac.uk/metagenomics/api/v1/studies"
     endpoint = f"{base_url}/{study_accession}/samples"
+    params = {}
 
     print(f"Making GET request to: {endpoint}")
-    response = requests.get(endpoint)
+    response = requests.get(endpoint, params=params)
 
+    # Check if the request was successful
     if response.status_code == 200:
-        samples_metadata_MGnifystudy = response.json()
-        print("GET request successful.")
+        # Retrieve the total number of items in the request and 
+        # the total number of pages
+        page_info = response.json()["meta"]["pagination"]
+        total_count = page_info["count"]
+        total_pages = page_info["pages"]
+        print(f"Total studies to retrieve: {total_count}")
+        print(f"Total pages: {total_pages}")
 
-        return samples_metadata_MGnifystudy
+        all_samples = []
+        page = 1
+
+        # Iterate through all pages and append the data to the list
+        while page <= total_pages:
+            print(f"Retrieving data for page {page}/{total_pages}")
+
+            params["page"] = page
+            response = requests.get(endpoint, params=params)
+
+            if response.status_code == 200:
+                data = response.json()["data"]
+                all_samples.extend(data)
+                page += 1
+            else:
+                print(f"Failed to retrieve data for page {page}. Status code: {response.status_code}")
+                break
+
+        print("GET request successful. Data retrieval complete.")
+        return all_samples
     else:
-        print(f"Error: {response.status_code}")
-        return None
+        print(f"Failed to retrieve page info. Status code: {response.status_code}")
+        return []  # Return an empty list if the request was not successful
