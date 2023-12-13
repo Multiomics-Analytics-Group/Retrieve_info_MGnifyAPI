@@ -36,7 +36,7 @@ def fetch_studies_or_analyses_info(url, params):
         page_info = response.json()["meta"]["pagination"]
         total_count = page_info["count"]
         total_pages = page_info["pages"]
-        print(f"Total studies to retrieve: {total_count}")
+        print(f"Total studies or analyses to retrieve: {total_count}")
         print(f"Total pages: {total_pages}")
 
         all_studies_or_analyses = []
@@ -100,7 +100,7 @@ def get_studies_and_analyses_summary(biome_name, experiment_type):
     # Create a DataFrame from the list of dictionaries
     df_studies_mgnify = pd.DataFrame(study_list)
 
-    # Set the URL for the GET request to retrieve all analyses
+        # Set the URL for the GET request to retrieve all analyses
     url = "https://www.ebi.ac.uk/metagenomics/api/v1/analyses"
 
     # Set the query parameters for the GET request
@@ -139,9 +139,15 @@ def get_studies_and_analyses_summary(biome_name, experiment_type):
         study_id = analysis["relationships"]["study"]["data"]["id"] if "study" in analysis["relationships"] else ""
         sample_id = analysis["relationships"]["sample"]["data"]["id"] if "sample" in analysis["relationships"] else ""
         
+        if experiment_type == "assembly":
+            assembly_run_id = analysis["relationships"]["assembly"]["data"]["id"]
+        elif experiment_type == "metagenomic":
+            assembly_run_id = analysis["relationships"]["run"]["data"]["id"]
+
         analysis_list.append({
             "analysis_id": analysis_id,
             "sample_id": sample_id,
+            "assembly_run_id": assembly_run_id,
             "experiment_type": experiment_type,
             "pipeline_version": pipeline_version,
             "study_id": study_id,
@@ -155,7 +161,7 @@ def get_studies_and_analyses_summary(biome_name, experiment_type):
     df_analyses_mgnify_def = df_analyses_mgnify.merge(df_studies_mgnify, on="study_id", how="left")
 
     # Rearrange the columns
-    df_analyses_mgnify_def = df_analyses_mgnify_def[['analysis_id', 'sample_id', 'experiment_type', 'pipeline_version', 'instrument_platform', 
+    df_analyses_mgnify_def = df_analyses_mgnify_def[['analysis_id', 'sample_id', 'assembly_run_id', 'experiment_type', 'pipeline_version', 'instrument_platform', 
                                                             'study_id', 'bioproject', 'study_name', 'n_samples', 'centre_name', 'biomes']]
 
     # Create a dataframe with the unique study IDs
