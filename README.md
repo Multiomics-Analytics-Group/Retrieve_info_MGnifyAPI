@@ -6,6 +6,7 @@ Scripts to get information and results from MGnify studies for a given biome and
 2. Use the functions from `Scripts/Functions_getInfo_MGnify_studies_analyses.py` to retrieve a summary of MGnify studies and analyses for a given biome and data type (amplicon, shotgun metagenomics, metatranscriptomic, or assembly). The attributes of the api requests can be modified in the script. See an example of how to use these functions in the `Scripts/example_main_get_summary_studies_and_analyses.py` file.
 3. Use the functions from `Scripts/Functions_get_results_from_MGnifystudy.py` to obtain abundance and functional tables, as well as other results for a MGnify study. See an example of how to use these functions in the `Scripts/example_main_get_results_from_MGnifystudy.py` file.
 4. Use the functions from `Scripts/Functions_get_samplesMetadata_from_MGnifystudy.py` to obtain metadata for the samples of a MGnify study. See an example of how to use these functions in the `Scripts/example_main_get_samplesMetadata_from_MGnifystudy.py` file.
+5. Use the fucntions from `Script/get_fastq_from_list_ids.py` to obtain FASTQ files from MGnify studies
 
 Modify the scripts to change the biome of interest, the data types to include, the desired study, and other attributes from the get requests to the MGnify API.
 
