@@ -143,6 +143,8 @@ def get_studies_and_analyses_summary(biome_name, experiment_type):
             assembly_run_id = analysis["relationships"]["assembly"]["data"]["id"]
         elif experiment_type == "metagenomic":
             assembly_run_id = analysis["relationships"]["run"]["data"]["id"]
+        elif experiment_type == "metatranscriptomic":
+            assembly_run_id = analysis["relationships"]["run"]["data"]["id"]
 
         analysis_list.append({
             "analysis_id": analysis_id,
