@@ -11,8 +11,8 @@ def load_abund_table(folder_path, selected_study, phylum):
         # Filtering for phylum taxonomy files
         filtered_files = [f for f in file_list if 'phylum_taxonomy' in f]
     else:
-        # Filtering out unwanted files (those with '_phylum_')
-        filtered_files = [f for f in file_list if '_phylum_' not in f]
+        # Filtering out unwanted files (those with '_phylum_' and '_LSU_')
+        filtered_files = [f for f in file_list if '_phylum_' not in f and '_LSU_' not in f]
 
     # Check if the filtered list is not empty
     if filtered_files:
@@ -40,14 +40,17 @@ def preprocess_abund_table_phylum(abund_table):
 
     # Delete rows that contain 'Candidatus', 'candidate', or names with unofficial names
     # (e.g. 'TA06', 'WPS-2', 'WS1', 'AC1', etc.)
-    unoff_names_pattern1 = "^[A-Z]{2,}[0-9-]*$|.*-.*|^[A-Z]{2,}"
-    unoff_names_pattern2 =  r'^[A-Za-z]+(?![\d_])$'
-
     abund_table = abund_table[~abund_table['phylum'].str.contains('Candidatus')]
     abund_table = abund_table[~abund_table['phylum'].str.contains('candidate')]
+    
+    unoff_names_pattern1 = "^[A-Z]{2,}[0-9-]*$|.*-.*|^[A-Z]{2,}"
+    unoff_names_pattern2 =  r'^[A-Za-z]+(?![\d_])$'
     abund_table = abund_table[~abund_table['phylum'].str.contains(unoff_names_pattern1, regex=True)]
     abund_table = abund_table[abund_table['phylum'].str.match(unoff_names_pattern2, na=False)]
     
+    # Filter out rows where the tax_rank is all in lowercase
+    abund_table = abund_table[~abund_table['phylum'].str.islower()]
+
     # Reset index
     abund_table = abund_table.reset_index(drop=True)
     
@@ -69,7 +72,7 @@ def preprocess_abund_table(abund_table, tax_rank):
     # Remove the first row corresponding to the sums of the counts in each column
     abund_table = abund_table.iloc[1:, :]
 
-    # Step 2: Delete additional characters (e.g. 'k__', 'p__', or '[]') from the taxonomic columns
+    # Delete additional characters (e.g. 'k__', 'p__', or '[]') from the taxonomic columns
     for col in abund_table.columns[:7]:  # Assuming the first 7 columns are taxonomic ranks
         abund_table[col] = abund_table[col].apply(lambda x: x[3:] if pd.notnull(x) else x)
         abund_table[col] = abund_table[col].str.replace('[', '').str.replace(']', '')
@@ -94,6 +97,9 @@ def preprocess_abund_table(abund_table, tax_rank):
     abund_table = abund_table[~abund_table[tax_rank].str.contains('mixed')]
     abund_table = abund_table[~abund_table[tax_rank].str.contains(unoff_names_pattern1, regex=True)]
     abund_table = abund_table[abund_table[tax_rank].str.match(unoff_names_pattern2, na=False)]
+
+    # Filter out rows where the tax_rank is all in lowercase
+    abund_table = abund_table[~abund_table[tax_rank].str.islower()]
 
     # Reset index
     abund_table = abund_table.reset_index(drop=True)
