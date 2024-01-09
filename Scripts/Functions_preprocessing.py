@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import glob
 import os
 
@@ -121,7 +122,7 @@ def preprocess_abund_table_superkingdom(abund_table, tax_rank):
         # Using .loc for safe modification
         taxonomic_df.loc[:, col] = taxonomic_df[col].apply(lambda x: x.split("__", 1)[-1] if pd.notnull(x) else x)
         taxonomic_df.loc[:, col] = taxonomic_df[col].str.replace('[', '').str.replace(']', '')
-
+    
     # Merge taxonomic and abundance dataframes
     merged_df = pd.concat([taxonomic_df, abundance_df], axis=1)
 
@@ -130,6 +131,14 @@ def preprocess_abund_table_superkingdom(abund_table, tax_rank):
 
     # Aggregate data
     aggregated_abund_table = aggregate_data(filtered_df, tax_rank)
+
+    # Fill th empty strings with NaN values
+    aggregated_abund_table = aggregated_abund_table.replace('', np.nan)
+
+    # Check if all rows in the Kingdom column are NaN values
+    if aggregated_abund_table['Kingdom'].isnull().all():
+        # Remove the Kingdom column
+        aggregated_abund_table = aggregated_abund_table.drop(columns='Kingdom')
 
     return aggregated_abund_table
 
