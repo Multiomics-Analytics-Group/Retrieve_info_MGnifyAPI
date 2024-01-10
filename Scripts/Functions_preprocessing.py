@@ -10,7 +10,7 @@ def load_abund_table(folder_path, selected_study, phylum):
 
     if phylum:
         # Filtering for phylum taxonomy files
-        filtered_files = [f for f in file_list if 'phylum_taxonomy' in f]
+        filtered_files = [f for f in file_list if 'phylum_taxonomy' in f and '_LSU_' not in f]
     else:
         # Filtering out unwanted files (those with '_phylum_' and '_LSU_')
         filtered_files = [f for f in file_list if '_phylum_' not in f and '_LSU_' not in f]
@@ -18,6 +18,7 @@ def load_abund_table(folder_path, selected_study, phylum):
     # Check if the filtered list is not empty
     if filtered_files:
         filename = filtered_files[0]  # Selecting the first matching file
+        print(f"File found for the study '{selected_study}' in folder '{folder_path}': {filename}")
     else:
         print(f"No files found for the study '{selected_study}' in folder '{folder_path}'.")
         return None
@@ -54,6 +55,9 @@ def preprocess_abund_table_phylum(abund_table):
 
     # Reset index
     abund_table = abund_table.reset_index(drop=True)
+
+    # Check if column names have the ending '_FASTA' and remove it
+    abund_table.columns = abund_table.columns.str.replace('_FASTA', '')
     
     return abund_table
 
@@ -98,6 +102,9 @@ def preprocess_abund_table_root(abund_table, tax_rank):
     # Aggregate data
     aggregated_abund_table = aggregate_data(filtered_df, tax_rank)
 
+    # Rename duplicated taxa
+    aggregated_abund_table = rename_duplicated_taxa(aggregated_abund_table, tax_rank)
+
     return aggregated_abund_table
 
 # Function to preprocess file format with sk__ as the first column
@@ -139,6 +146,9 @@ def preprocess_abund_table_superkingdom(abund_table, tax_rank):
     if aggregated_abund_table['Kingdom'].isnull().all():
         # Remove the Kingdom column
         aggregated_abund_table = aggregated_abund_table.drop(columns='Kingdom')
+
+    # Rename duplicated taxa
+    aggregated_abund_table = rename_duplicated_taxa(aggregated_abund_table, tax_rank)
 
     return aggregated_abund_table
 
@@ -186,3 +196,22 @@ def aggregate_data(abund_table, tax_rank):
     aggregated_data = abund_table.groupby(groupby_columns).sum()
 
     return aggregated_data.reset_index()
+
+def rename_duplicated_taxa(abund_table, tax_rank):
+    # Check duplicated rows at the Genus level
+    duplicated_genus = abund_table[abund_table.duplicated(subset=tax_rank, keep=False)]
+
+    # Iterate over duplicated rows
+    for index, row in duplicated_genus.iterrows():
+        # Find the index of the Genus column
+        genus_index = abund_table.columns.get_loc(tax_rank)
+
+        # Get the higher taxonomic rank's name and its first four letters
+        higher_tax_rank = abund_table.columns[genus_index - 1]
+        higher_tax_rank_value = str(row[higher_tax_rank])[:4]
+
+        # Rename the duplicated Genus by prefixing with the higher tax rank's first four letters
+        new_genus_name = f"{higher_tax_rank_value}_{row[tax_rank]}"
+        abund_table.at[index, tax_rank] = new_genus_name
+
+    return abund_table
