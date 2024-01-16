@@ -1,3 +1,4 @@
+#%%
 from Functions_preprocessing import load_abund_table, preprocess_abund_table_phylum, preprocess_abund_table, drop_duplicatedsamples
 import pandas as pd
 
@@ -32,3 +33,4 @@ dropped_ana_phyl.to_csv(f"../Output/Abundance_tables_processed/{selected_study}/
 # Export the missing samples as a txt file
 with open(f"../Output/Abundance_tables_processed/{selected_study}/{selected_study}_missing_samples.txt", "w") as output:
     output.write(str(missing_samp_phyl))
+# %%
