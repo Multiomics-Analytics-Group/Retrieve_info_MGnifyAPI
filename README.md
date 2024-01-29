@@ -28,6 +28,34 @@ $ pipenv shell
 
 You can find a detailed guide on how to use pipenv [here](https://realpython.com/pipenv-guide/).
 
+If you are using an Azure VM, it may be prudent to be mindful of the following considerations:
+1. Pipenv might not work as its installation path may not be included in the system's PATH.
+2. The Python version might not be up-to-date for installing a Pip package.
+
+```bash
+# Check where it is located
+$ pip show pipenv | grep Location
+# open the shell configuration file
+$ nano /home/azureuser/.bashrc
+# add this line at the end of the file and save the changes
+$ export PATH="$PATH:/home/azureuser/.local/bin"
+# reload the shell configuration file
+$ source /home/azureuser/.bashrc
+# verify the version which should now be recognized
+$ pipenv --version
+```
+In case your python version is outdated, it should be updated to version 3.11
+
+```bash
+# add a PPA  
+$ sudo add-apt-repository ppa:deadsnakes/ppa
+$ sudo apt update
+# install the new version to be able to activate the pipenv environment
+sudo apt install python3.11
+```  
+
+---
+
 Alternatively, you can create a conda virtual environment with the required libraries using the `requirements.txt` file. To do this, you should clone this GitHub repository, open a terminal, move to the folder containing this repository, and run the following commands:
 
 ```bash
