@@ -3,3 +3,9 @@ Scripts/EDA_wwt_shot_metag_assembly.ipynb
 Output/Taxonomic_inf
 Scripts/__pycache__
 Scripts/Test_script.py
+.DS_Store
+Output/.DS_Store
+Output/IDs/
+Output/Unified_analyses/.DS_Store
+Output/Unified_analyses/MGYS00001392/.DS_Store
+Output/Unified_analyses/MGYS00001392/ERR977/
