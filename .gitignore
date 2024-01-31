@@ -9,3 +9,6 @@ Output/IDs/
 Output/Unified_analyses/.DS_Store
 Output/Unified_analyses/MGYS00001392/.DS_Store
 Output/Unified_analyses/MGYS00001392/ERR977/
+credentials.json
+notes_marcor.txt
+notebooks/*

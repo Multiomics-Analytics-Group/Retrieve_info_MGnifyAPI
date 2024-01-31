@@ -4,7 +4,7 @@
 """ This python script downloads fastq file given an ACCESSION related to MGnify.
 
 __author__ = Marco Reverenna
-__copyright__ = Copyright 2023-2024
+__copyright__ = Copyright 2024-2025
 __date__ = 14 Dec 2023
 __maintainer__ = Marco Reverenna
 __email__ = marcor@dtu.dk
@@ -12,7 +12,12 @@ __status__ = Dev
 """
 
 import os
+#import configparser
 from ftplib import FTP
+from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
+
+
+#from azure.storage.blob import BlobServiceClient
 # ftplib allows to transfer files between your computer and a server
 
 
@@ -33,6 +38,7 @@ def extract_column_names(input_file, output_name, output_directory):
         with open(full_output_path, 'w') as id_file:
             id_file.write('\n'.join(column_names))
             # writes all the columns on txt file
+    print(f"File created in {output_directory}")
 
 def download_files_from_list(server, input_ids_file, remote_directory, local_directory):
     """ This function downloads fatsq file given a txt file wich contains the IDs.
@@ -78,12 +84,102 @@ def download_files_from_list(server, input_ids_file, remote_directory, local_dir
         ftp.quit()
 
 
+
+def download_files_push_store(server, input_ids_file, remote_directory, local_directory, azure_connection_string, azure_container_name):
+    """ This function downloads fastq files given a txt file which contains the IDs, and uploads them to Azure Blob Storage.
+
+    Args:
+        server (str): server address (first part of the path)
+        input_ids_file (file_txt): file which contains a list of IDs obtained from an ACCESSION
+        remote_directory (str): path of the folder where are stored the fastq files
+        local_directory (str): path to your local directory which contains script and data
+        azure_connection_string (str): Azure Storage account connection string
+        azure_container_name (str): Name of the Azure Blob Storage container
+    """
+
+    failed_files = []
+    try:
+        ftp = FTP(server)
+        ftp.login()
+        blob_service_client = BlobServiceClient.from_connection_string(azure_connection_string)
+        container_client = blob_service_client.get_container_client(azure_container_name)
+
+        with open(input_ids_file, 'r') as id_file:
+            ids = id_file.readlines()
+
+            for id_name in ids:
+                id_name = id_name.strip()
+                folder_name = id_name[:6] 
+                
+                remote_path = f"{remote_directory}/{folder_name}/{id_name}/"
+                local_path = f"{local_directory}/{folder_name}/{id_name}/"
+
+                os.makedirs(local_path, exist_ok=True)
+                ftp.cwd(remote_path)
+
+                files_to_download = ftp.nlst()
+
+                for file in files_to_download:
+                    local_file_path = os.path.join(local_path, file)
+                    with open(local_file_path, 'wb') as local_file:
+                        ftp.retrbinary('RETR ' + file, local_file.write)
+                    
+                    # upload files to Azure Blob Storage
+                    try:
+                        blob_client = container_client.get_blob_client(blob=os.path.join(folder_name, id_name, file))
+                        with open(local_file_path, "rb") as data:
+                            blob_client.upload_blob(data)
+                        print(f"File {file} successfully uploaded to Azure Storage in {os.path.join(folder_name, id_name)}")
+                    except Exception as e:
+                        print(f"Failed to upload {file}: {e}")
+                        failed_files.append(file)
+
+                    # os.remove(local_file_path) # delete the local file after upload
+
+
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        ftp.quit()
+
+        # write failed files to a log file
+        if failed_files:
+            with open("failed_uploads.log", "w") as log_file:
+                for file in failed_files:
+                    log_file.write(f"{file}\n")
+
+# Utilizzo della funzione
+# download_files_push_store('server_address', 'ids_file.txt', '/remote/dir/', '/local/dir/', 'azure_connection_string', 'mycontainer')
+
+
+### aggiornare funzione soprastante
+
+#def remove_txt_fastq():
+#    """
+#    """
+
+#    if txt file esiste:
+#        rimuovere il FASTQ connesso
+#    altrimenti riporta un messaggio "il file XXX non e stato eliminato"
+
+
+
+
 if __name__ == "__main__":
     # example of server address = ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR977/ERR977413/ERR977413_1.fastq.gz
     server_address = 'ftp.sra.ebi.ac.uk'
-    accession = 'MGYS00001392'
-    id = 'ERP011345'
-    tsv_path = f'../Output/Unified_analyses/{accession}/{accession}_{id}_taxonomy_abundances_v3.0.tsv'
+    # si potrebbe creare una tupla
+    # quello di cui ho bisogno e' il lista di accessioni
+    accession = 'MGYS00001392'    
+    erp_id = 'ERP011345'
+
+    """
+    e' probabilmente una buona idea to rimuovere ERP e lasciare solo l'accession.
+    Verificare se per una accessione ci sono piu erp_id altrimenti rimuovere.
+    """
+
+    tsv_path = f'../Output/Unified_analyses/{accession}/{accession}_{erp_id}_taxonomy_abundances_v3.0.tsv'
+
     local_download_directory = f'../Output/Unified_analyses/{accession}/'
     
     # create a new folder for IDs
@@ -91,13 +187,23 @@ if __name__ == "__main__":
     if not os.path.exists(path):
         os.makedirs(path)
 
-    extract_column_names(tsv_path, f'ERR_IDs_from_{accession}.txt', path)
-    download_files_from_list(server_address, f'../Output/IDs/ERR_IDs_from_{accession}.txt', '/vol1/fastq/', local_download_directory)
-
-
-# NEXT STEPS
-# optimise the code
-# run Albert's nf pipeline using fastq file downloaded through this script
-# upload in git via a second branch
-# update Sebastian's readme file
-# test if the code works using the same conda environment in MGnify (done)
+    extract_column_names(tsv_path,
+                         f'ERR_IDs_from_{accession}.txt',
+                         path
+                         )
+    
+    download_files_from_list(server_address,
+                             f'../Output/IDs/ERR_IDs_from_{accession}.txt',
+                             '/vol1/fastq/',
+                             local_download_directory
+                             )
+    
+    download_files_push_store(server_address,
+                              '../Output/IDs/ERR_IDs_from_{accession}.txt',
+                              '/vol1/fastq/',
+                              local_download_directory,
+                              azure_connection_string,
+                              azure_container_name
+                              )
+    
+    # aggiornare requirements
