@@ -9,6 +9,8 @@ numpy = "*"
 scipy = "*"
 jsonapi-client = "*"
 requests = "*"
+azure-storage-blob = "*"
+
 
 [dev-packages]
 ipykernel = "*"
