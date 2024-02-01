@@ -81,19 +81,19 @@ def download_files_from_list(server, input_ids_file, remote_directory, local_dir
         ftp.quit()
 
 
-    def load_credentials(file_path = '~/Retrieve_info_MGnifyAPI/credentials.json'):
-        # considerare il path assoluto in modo tale da correre lo script python da qualsiasi posizione
-        """Load the credentials for connecting with Azure
+def load_credentials(file_path = '~/Retrieve_info_MGnifyAPI/credentials.json'):
+    # considerare il path assoluto in modo tale da correre lo script python da qualsiasi posizione
+    """Load the credentials for connecting with Azure
 
-        Args:
-            file_path ('str'): _description_
+    Args:
+        file_path ('str'): _description_
 
-        Returns:
-            _type_: _description_
-        """
-        with open(file_path, 'r') as file:
-            data = json.load(file)
-        return data
+    Returns:
+        _type_: _description_
+    """
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+    return data
 
 def download_files_push_store(server, input_ids_file, remote_directory, local_directory, azure_connection_string, azure_container_name):
     """ This function downloads fastq files given a txt file which contains the IDs, and uploads them to Azure Blob Storage.
@@ -201,10 +201,10 @@ if __name__ == "__main__":
 
     # download fastq files and push them in the storage account
     download_files_push_store(server_address,
-                              '/Retrieve_info_MGnifyAPI/Output/IDs/ERR_IDs_from_{accession}.txt',
+                              f'../Output/IDs/ERR_IDs_from_{accession}.txt',
                               '/vol1/fastq/',
                               local_download_directory,
-                              azure_connection_string = f"DefaultEndpointsProtocol=https;AccountName={ credentials['account_name']};AccountKey={credentials['account_key']};EndpointSuffix=core.windows.net",
+                              azure_connection_string = f"DefaultEndpointsProtocol=https;AccountName={ credentials['storageAccountName']};AccountKey={credentials['storageAccountKey']};EndpointSuffix=core.windows.net",
                               # DefaultEndpointsProtocol=https;AccountName=your_account_name;AccountKey=your_account_key;EndpointSuffix=core.windows.net
 
                               azure_container_name = 'retrievefastq'
