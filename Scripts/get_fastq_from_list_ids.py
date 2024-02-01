@@ -50,8 +50,6 @@ def download_files_from_list(server, input_ids_file, remote_directory, local_dir
     try:
         ftp = FTP(server)
         ftp.login()
-        # this time is not necessary any access keys otherwise you need to specify it
-        # in that case please have a look to the module ftplib
 
         with open(input_ids_file, 'r') as id_file:
             ids = id_file.readlines()
@@ -82,14 +80,13 @@ def download_files_from_list(server, input_ids_file, remote_directory, local_dir
 
 
 def load_credentials(file_path = '~/Retrieve_info_MGnifyAPI/credentials.json'):
-    # considerare il path assoluto in modo tale da correre lo script python da qualsiasi posizione
     """Load the credentials for connecting with Azure
 
     Args:
-        file_path ('str'): _description_
+        file_path (file_json): file which contains your credentials to Azure account
 
     Returns:
-        _type_: _description_
+        str: Account name and key to access to your account
     """
     with open(file_path, 'r') as file:
         data = json.load(file)
@@ -144,7 +141,7 @@ def download_files_push_store(server, input_ids_file, remote_directory, local_di
                         print(f"Failed to upload {file}: {e}")
                         failed_files.append(file)
 
-                    # os.remove(local_file_path) # delete the local file after upload
+                    os.remove(local_file_path) # delete the local file after upload
 
 
     except Exception as e:
@@ -162,17 +159,6 @@ def download_files_push_store(server, input_ids_file, remote_directory, local_di
 
 if __name__ == "__main__":
     # example of server address = ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR977/ERR977413/ERR977413_1.fastq.gz
-
-    """
-    si potrebbe creare una tupla
-    quello di cui ho bisogno e' il lista di accessioni
-    """
-
-    """
-    e' probabilmente una buona idea to rimuovere ERP e lasciare solo l'accession.
-    Verificare se per una accessione ci sono piu erp_id altrimenti rimuovere.
-    """
-
     server_address = 'ftp.sra.ebi.ac.uk'
     accession = 'MGYS00001392'
     erp_id = 'ERP011345'
@@ -185,16 +171,10 @@ if __name__ == "__main__":
         os.makedirs(path)
 
     # get a list of ERR ids for downloading fastq files
-    extract_column_names(tsv_path,
-                         f'ERR_IDs_from_{accession}.txt',
-                         path
-                         )
-    # download fastq in local
-    #download_files_from_list(server_address,
-    #                         f'../Output/IDs/ERR_IDs_from_{accession}.txt',
-    #                         '/vol1/fastq/',
-    #                         local_download_directory
-    #                         )
+    extract_column_names(input_file= tsv_path, output_name = f'ERR_IDs_from_{accession}.txt', output_directory = path)
+
+    # download FASTQ in local
+    #download_files_from_list(server_address, f'../Output/IDs/ERR_IDs_from_{accession}.txt', '/vol1/fastq/', local_download_directory)
 
     # load personal credentials for Azure connection
     credentials = load_credentials('../credentials.json')
@@ -205,7 +185,12 @@ if __name__ == "__main__":
                               '/vol1/fastq/',
                               local_download_directory,
                               azure_connection_string = f"DefaultEndpointsProtocol=https;AccountName={ credentials['storageAccountName']};AccountKey={credentials['storageAccountKey']};EndpointSuffix=core.windows.net",
-                              # DefaultEndpointsProtocol=https;AccountName=your_account_name;AccountKey=your_account_key;EndpointSuffix=core.windows.net
-
                               azure_container_name = 'retrievefastq'
                               )
+
+# Next steps
+"""
+1. e' probabilmente una buona idea to rimuovere ERP e lasciare solo l'accession = verificare se per una accessione ci sono piu erp_id altrimenti rimuovere.
+2. si potrebbe creare una tupla, quello di cui ho bisogno e' il lista di accessioni
+3. considerare il path assoluto in modo tale da correre lo script python da qualsiasi posizione
+"""
