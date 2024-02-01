@@ -12,13 +12,9 @@ __status__ = Dev
 """
 
 import os
-#import configparser
 import json
 from ftplib import FTP
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
-
-
-#from azure.storage.blob import BlobServiceClient
 # ftplib allows to transfer files between your computer and a server
 
 
@@ -62,8 +58,8 @@ def download_files_from_list(server, input_ids_file, remote_directory, local_dir
 
             for id_name in ids:
                 id_name = id_name.strip()
-                folder_name = id_name[:6] 
-                
+                folder_name = id_name[:6]
+
                 remote_path = f"{remote_directory}/{folder_name}/{id_name}/"
                 local_path = f"{local_directory}/{folder_name}/{id_name}/"
 
@@ -85,19 +81,19 @@ def download_files_from_list(server, input_ids_file, remote_directory, local_dir
         ftp.quit()
 
 
-    def load_cred(file_path = '../credentials.json'):
-        # considerare il path assoluto in modo tale da correre lo script python da qualsiasi posizione
-        """Load the credentials for connecting with Azure
-        
-        Args:
-            file_path ('str'): _description_
+def load_credentials(file_path = '~/Retrieve_info_MGnifyAPI/credentials.json'):
+    # considerare il path assoluto in modo tale da correre lo script python da qualsiasi posizione
+    """Load the credentials for connecting with Azure
 
-        Returns:
-            _type_: _description_
-        """
-        with open(file_path, 'r') as file:
-            data = json.load(file)
-        return data
+    Args:
+        file_path ('str'): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+    return data
 
 def download_files_push_store(server, input_ids_file, remote_directory, local_directory, azure_connection_string, azure_container_name):
     """ This function downloads fastq files given a txt file which contains the IDs, and uploads them to Azure Blob Storage.
@@ -123,8 +119,8 @@ def download_files_push_store(server, input_ids_file, remote_directory, local_di
 
             for id_name in ids:
                 id_name = id_name.strip()
-                folder_name = id_name[:6] 
-                
+                folder_name = id_name[:6]
+
                 remote_path = f"{remote_directory}/{folder_name}/{id_name}/"
                 local_path = f"{local_directory}/{folder_name}/{id_name}/"
 
@@ -137,7 +133,7 @@ def download_files_push_store(server, input_ids_file, remote_directory, local_di
                     local_file_path = os.path.join(local_path, file)
                     with open(local_file_path, 'wb') as local_file:
                         ftp.retrbinary('RETR ' + file, local_file.write)
-                    
+
                     # upload files to Azure Blob Storage
                     try:
                         blob_client = container_client.get_blob_client(blob=os.path.join(folder_name, id_name, file))
@@ -162,28 +158,27 @@ def download_files_push_store(server, input_ids_file, remote_directory, local_di
                 for file in failed_files:
                     log_file.write(f"{file}\n")
 
-# Utilizzo della funzione
 # download_files_push_store('server_address', 'ids_file.txt', '/remote/dir/', '/local/dir/', 'azure_connection_string', 'mycontainer')
-                    
+
 if __name__ == "__main__":
     # example of server address = ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR977/ERR977413/ERR977413_1.fastq.gz
-    
+
     """
     si potrebbe creare una tupla
     quello di cui ho bisogno e' il lista di accessioni
     """
-    
+
     """
     e' probabilmente una buona idea to rimuovere ERP e lasciare solo l'accession.
     Verificare se per una accessione ci sono piu erp_id altrimenti rimuovere.
     """
-    
+
     server_address = 'ftp.sra.ebi.ac.uk'
-    accession = 'MGYS00001392'    
+    accession = 'MGYS00001392'
     erp_id = 'ERP011345'
     tsv_path = f'../Output/Unified_analyses/{accession}/{accession}_{erp_id}_taxonomy_abundances_v3.0.tsv'
     local_download_directory = f'../Output/Unified_analyses/{accession}/'
-    
+
     # create a new folder for IDs
     path = os.path.join('../Output/', "IDs")
     if not os.path.exists(path):
@@ -195,24 +190,22 @@ if __name__ == "__main__":
                          path
                          )
     # download fastq in local
-    download_files_from_list(server_address,
-                             f'../Output/IDs/ERR_IDs_from_{accession}.txt',
-                             '/vol1/fastq/',
-                             local_download_directory
-                             )
-    
+    #download_files_from_list(server_address,
+    #                         f'../Output/IDs/ERR_IDs_from_{accession}.txt',
+    #                         '/vol1/fastq/',
+    #                         local_download_directory
+    #                         )
+
     # load personal credentials for Azure connection
-    credentials = load_cred('../credentials.json')
+    credentials = load_credentials('../credentials.json')
 
     # download fastq files and push them in the storage account
     download_files_push_store(server_address,
-                              '../Output/IDs/ERR_IDs_from_{accession}.txt',
+                              f'../Output/IDs/ERR_IDs_from_{accession}.txt',
                               '/vol1/fastq/',
                               local_download_directory,
-                              azure_connection_string = f"DefaultEndpointsProtocol=https;AccountName={ credentials['account_name']};AccountKey={credentials['account_key']};EndpointSuffix=core.windows.net",
+                              azure_connection_string = f"DefaultEndpointsProtocol=https;AccountName={ credentials['storageAccountName']};AccountKey={credentials['storageAccountKey']};EndpointSuffix=core.windows.net",
                               # DefaultEndpointsProtocol=https;AccountName=your_account_name;AccountKey=your_account_key;EndpointSuffix=core.windows.net
 
                               azure_container_name = 'retrievefastq'
                               )
-    
-    # aggiornare requirements
