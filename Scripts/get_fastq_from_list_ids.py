@@ -176,11 +176,11 @@ if __name__ == "__main__":
     server_address = 'ftp.sra.ebi.ac.uk'
     accession = 'MGYS00001392'
     erp_id = 'ERP011345'
-    tsv_path = f'/Retrieve_info_MGnifyAPI/Output/Unified_analyses/{accession}/{accession}_{erp_id}_taxonomy_abundances_v3.0.tsv'
-    local_download_directory = f'/Retrieve_info_MGnifyAPI/Output/Unified_analyses/{accession}/'
+    tsv_path = f'../Output/Unified_analyses/{accession}/{accession}_{erp_id}_taxonomy_abundances_v3.0.tsv'
+    local_download_directory = f'../Output/Unified_analyses/{accession}/'
 
     # create a new folder for IDs
-    path = os.path.join('/Retrieve_info_MGnifyAPI/Output/', "IDs")
+    path = os.path.join('../Output/', "IDs")
     if not os.path.exists(path):
         os.makedirs(path)
 
@@ -197,7 +197,7 @@ if __name__ == "__main__":
     #                         )
 
     # load personal credentials for Azure connection
-    credentials = load_credentials('/Retrieve_info_MGnifyAPI/credentials.json')
+    credentials = load_credentials('../credentials.json')
 
     # download fastq files and push them in the storage account
     download_files_push_store(server_address,
