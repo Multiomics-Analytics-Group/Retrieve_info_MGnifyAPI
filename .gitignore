@@ -15,3 +15,11 @@ notebooks/test.ipynb
 Script/main.py
 bin/test.py
 outputs/
+Output/Mgnify_analyses.json
+Output/Mgnify_studies.json
+notebooks/test_version3.ipynb
+outputs/mgnify_analyses.json
+outputs/mgnify_analysis.csv
+outputs/mgnify_studies.csv
+outputs/mgnify_studies.json
+outputs/unique_mgys_studies_ids.txt
