@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 
 """ This python script downloads fastq file given an ACCESSION related to MGnify.
+ __  __              
+|  \/  |                   
+| \  / | ___  _ __   __ _ 
+| |\/| |/ _ \| '_ \ / _` | 
+| |  | | (_) | | | | (_| | 
+|_|  |_|\___/|_| |_|\__,_|
 
 __authors__ = M.Reverenna, S.A.Ruano
 __copyright__ = Copyright 2024-2025
