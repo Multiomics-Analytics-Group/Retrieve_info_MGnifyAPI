@@ -21,12 +21,11 @@ __status__ = Dev
 import requests
 import os
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
+#import matplotlib.pyplot as plt
+#import seaborn as sns
 import json
 from ftplib import FTP
-
-
+from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 
 def fetch_biomes_and_save(output_dir):
     """
@@ -301,7 +300,33 @@ def load_credentials(file_path = '~/Retrieve_info_MGnifyAPI/credentials.json'):
         data = json.load(file)
     return data
 
-def download_files_push_store(server, input_ids_file, remote_directory, local_directory, azure_connection_string, azure_container_name):
+def save_filtered_ids_to_file(dataframe, output_column, filter_column, filter_value, output_path):
+    """
+    Filters a DataFrame for rows where filter_column equals filter_value,
+    extracts values from output_column of those rows, and saves them to a file.
+
+    Parameters:
+    - dataframe: pd.DataFrame, the DataFrame to filter.
+    - filter_column: str, the name of the column to apply the filter on.
+    - filter_value: str, the value to filter rows by in the filter_column.
+    - output_column: str, the name of the column from which to extract values.
+    - output_file_path: str, the path to the file where the output will be saved.
+
+    Returns:
+    - None, but saves a file at output_file_path with one value per line from the output_column.
+    """
+
+    filtered_df = dataframe[dataframe[filter_column] == filter_value]
+
+    output_values = filtered_df[output_column].tolist()
+
+    with open(os.path.join(output_path, 'assembly_run_ids.txt' ), 'w') as file:
+        for value in output_values:
+            file.write(f"{value}\n")
+
+    print(f"Saved {output_column} to {output_path}")
+
+def download_files_and_upload_to_azure(server_address, accession, local_directory_base, azure_connection_string, azure_container_name):
     """ This function downloads fastq files given a txt file which contains the IDs, and uploads them to Azure Blob Storage.
 
     Args:
@@ -312,54 +337,58 @@ def download_files_push_store(server, input_ids_file, remote_directory, local_di
         azure_connection_string (str): Azure Storage account connection string
         azure_container_name (str): Name of the Azure Blob Storage container
     """
+    found = False
+    ftp = FTP(server_address)
+    ftp.login()  # Non sono richieste credenziali per questo server
 
-    failed_files = []
+    # Crea il client di servizio blob di Azure con la stringa di connessione
+    blob_service_client = BlobServiceClient.from_connection_string(azure_connection_string)
+    container_client = blob_service_client.get_container_client(azure_container_name)
+
+    # Estrae le prime tre lettere e i primi tre numeri dall'ID dell'accessione per formare ID_start
+    ID_start = accession[:6]
+    base_path = f'/vol1/fastq/{ID_start}/'
+
     try:
-        ftp = FTP(server)
-        ftp.login()
-        blob_service_client = BlobServiceClient.from_connection_string(azure_connection_string)
-        container_client = blob_service_client.get_container_client(azure_container_name)
+        # Prova prima nella directory principale dell'accessione
+        path = f"{base_path}{accession}/"
+        try:
+            ftp.cwd(path)
+            files = ftp.nlst()
+            if files:
+                found = True
+        except Exception as e:
+            # Se non trova file nella directory principale, cerca nelle subfolders
+            for i in range(1, 1000):
+                subfolder = f"{i:03}"
+                path = f"{base_path}{subfolder}/{accession}/"
+                try:
+                    ftp.cwd(path)
+                    files = ftp.nlst()
+                    if files:
+                        found = True
+                        break
+                except Exception as e:
+                    continue
 
-        with open(input_ids_file, 'r') as id_file:
-            ids = id_file.readlines()
+        # Se i file sono stati trovati, scaricali e caricali su Azure
+        if found:
+            for file in files:
+                local_file_path = os.path.join(local_directory_base, file)
+                with open(local_file_path, 'wb') as local_file:
+                    ftp.retrbinary('RETR ' + file, local_file.write)
 
-            for id_name in ids:
-                id_name = id_name.strip()
-                folder_name = id_name[:6]
+                # Carica il file su Azure Blob Storage
+                blob_client = container_client.get_blob_client(blob=os.path.join(accession, file))
+                with open(local_file_path, "rb") as data:
+                    blob_client.upload_blob(data, overwrite=True)
+                
+                # Rimuovi il file locale dopo il caricamento, se desiderato
+                os.remove(local_file_path)
 
-                remote_path = f"{remote_directory}/{folder_name}/{id_name}/"
-                local_path = f"{local_directory}/{folder_name}/{id_name}/"
-
-                os.makedirs(local_path, exist_ok=True)
-                ftp.cwd(remote_path)
-
-                files_to_download = ftp.nlst()
-
-                for file in files_to_download:
-                    local_file_path = os.path.join(local_path, file)
-                    with open(local_file_path, 'wb') as local_file:
-                        ftp.retrbinary('RETR ' + file, local_file.write)
-
-                    # upload files to Azure Blob Storage
-                    try:
-                        blob_client = container_client.get_blob_client(blob=os.path.join(folder_name, id_name, file))
-                        with open(local_file_path, "rb") as data:
-                            blob_client.upload_blob(data)
-                        print(f"File {file} successfully uploaded to Azure Storage in {os.path.join(folder_name, id_name)}")
-                    except Exception as e:
-                        print(f"Failed to upload {file}: {e}")
-                        failed_files.append(file)
-
-                    os.remove(local_file_path) # delete the local file after upload
-
-
-    except Exception as e:
-        print(f"Error: {e}")
+            print(f"Files for {accession} downloaded and uploaded to Azure.")
+        else:
+            print("Files not found in any location.")
     finally:
         ftp.quit()
-
-        # write failed files to a log file
-        if failed_files:
-            with open("failed_uploads.log", "w") as log_file:
-                for file in failed_files:
-                    log_file.write(f"{file}\n")
+        
