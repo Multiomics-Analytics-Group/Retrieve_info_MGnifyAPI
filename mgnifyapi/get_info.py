@@ -21,7 +21,7 @@ import json
 import os
 
 # Define functions to interact with the MGnify API
-def fetch_studies_or_analyses_info(url, params):
+def request_info(url, params):
     '''Function to retrieve information for all MGnify studies or analyses for a given biome from a GET request
     Input: url (str) - URL for the GET request, e.g. https://www.ebi.ac.uk/metagenomics/api/v1/analyses
            params (dict) - query parameters for the GET request, e.g. biome_name
@@ -64,11 +64,11 @@ def fetch_studies_or_analyses_info(url, params):
         print(f"Failed to retrieve page info. Status code: {response.status_code}")
         return []  # Return an empty list if the request was not successful
     
-def get_studies_and_analyses_summary(
+
+def get_studies_info(
         biome_name: str, 
-        experiment_type: str,
         outpath: str,
-    ) -> tuple:
+    ) -> pd.DataFrame:
     """
     Obtain a summary of MGnify studies and analyses information for a given biome and data type.
     This function retrieves studies and analyses data from the MGnify API based on the specified biome and experiment type.
@@ -114,7 +114,7 @@ def get_studies_and_analyses_summary(
     params = {'biome_name': biome_name}
 
     # Retrieve all studies
-    all_studies_data = fetch_studies_or_analyses_info(url, params)
+    all_studies_data = request_info(url, params)
     print("Studies request complete.")
 
     # Export the result of the request to a JSON file
@@ -137,6 +137,52 @@ def get_studies_and_analyses_summary(
     # Create a DataFrame from the list of dictionaries
     df_studies_mgnify = pd.DataFrame(study_list)
 
+    return df_studies_mgnify
+
+
+def get_analyses_info(
+        biome_name: str, 
+        experiment_types: str|list,
+        outpath: str,
+    ) -> pd.DataFrame:
+    """
+    Obtain a summary of MGnify studies and analyses information for a given biome and data type.
+    This function retrieves studies and analyses data from the MGnify API based on the specified biome and experiment type.
+    It processes the data to create two Pandas DataFrames: one summarizing the analyses information and the other summarizing
+    the studies information. The results are also exported to JSON files.
+    Parameters:
+    biome_name (str): The name of the biome of interest, e.g., "root:Engineered:Wastewater".
+    experiment_type (str): The data type of interest, e.g., "assembly, metagenomic, metatranscriptomic".
+    outpath (str): The path to the output folder where the JSON data will be saved.
+    Returns:
+    tuple: A tuple containing two Pandas DataFrames:
+    - df_analyses_mgnify_def (DataFrame): DataFrame with the summary of analyses information.
+    - df_studies_mgnify (DataFrame): DataFrame with the summary of studies information.
+    The DataFrames contain the following columns:
+    - df_analyses_mgnify_def:
+    - analysis_id: The ID of the analysis.
+    - sample_id: The ID of the sample.
+    - assembly_run_id: The ID of the assembly run.
+    - experiment_type: The type of experiment.
+    - pipeline_version: The version of the pipeline used.
+    - instrument_platform: The platform used for the instrument.
+    - study_id: The ID of the study.
+    - bioproject: The bioproject associated with the study.
+    - study_name: The name of the study.
+    - n_samples: The number of samples in the study.
+    - centre_name: The name of the centre conducting the study.
+    - biomes: The biomes associated with the study.
+    - df_studies_mgnify:
+    - study_id: The ID of the study.
+    - study_name: The name of the study.
+    - bioproject: The bioproject associated with the study.
+    - centre_name: The name of the centre conducting the study.
+    - n_samples: The number of samples in the study.
+    - biomes: The biomes associated with the study.
+    - experiment_type: The type of experiment.
+    - pipeline_version: The version of the pipeline used.
+    """ 
+   
         # Set the URL for the GET request to retrieve all analyses
     url = "https://www.ebi.ac.uk/metagenomics/api/v1/analyses"
 
@@ -144,7 +190,7 @@ def get_studies_and_analyses_summary(
     params = {
         "biome_name": biome_name, # Replace with the biome name of interest
         "lineage": biome_name,    
-        "experiment_type": experiment_type, # Replace with the data type of interest
+        "experiment_type": experiment_types, # Replace with the data type of interest
         "species": "",
         "sample_accession": "",
         "pipeline_version": "",
@@ -159,7 +205,7 @@ def get_studies_and_analyses_summary(
         "include": "downloads"
     }
     # Retrieve all analyses
-    all_analysis_data = fetch_studies_or_analyses_info(url, params)
+    all_analysis_data = request_info(url, params)
     print("Analyses request complete.")
 
     # Export the result of the request to a JSON file
@@ -196,6 +242,14 @@ def get_studies_and_analyses_summary(
     # Create a Pandas DataFrame from the list of dictionaries
     df_analyses_mgnify = pd.DataFrame(analysis_list)
 
+    return df_analyses_mgnify
+
+
+def get_studies_and_analyses_summary(
+        df_studies_mgnify: pd.DataFrame,
+        df_analyses_mgnify: pd.DataFrame,
+    ):
+
     # Join the two DataFrames using the index
     df_analyses_mgnify_def = df_analyses_mgnify.merge(df_studies_mgnify, on="study_id", how="left")
 
@@ -225,4 +279,4 @@ def get_studies_and_analyses_summary(
         # Concatenate the new DataFrame with df_studies_mgnify
         df_studies_mgnify = pd.concat([df_studies_mgnify, study_data], ignore_index=True)
 
-    return (df_analyses_mgnify_def, df_studies_mgnify)
+    return df_analyses_mgnify_def, df_studies_mgnify
