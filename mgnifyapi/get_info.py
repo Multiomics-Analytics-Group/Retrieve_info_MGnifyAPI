@@ -22,7 +22,11 @@ import os
 
 
 # Define functions to interact with the MGnify API
-def request_info(url, params):
+def request_info(
+        url:str, 
+        params:dict,
+        outfile:str|None=None,
+    ):
     """Function to retrieve information for all MGnify studies or analyses for a given biome from a GET request
     Input: url (str) - URL for the GET request, e.g. https://www.ebi.ac.uk/metagenomics/api/v1/analyses
            params (dict) - query parameters for the GET request, e.g. biome_name
@@ -55,6 +59,12 @@ def request_info(url, params):
                 data = response.json()["data"]
                 all_studies_or_analyses.extend(data)
                 page += 1
+
+                # iteratively save if an output file is provided
+                if outfile:
+                    with open(outfile, "w") as f:
+                        json.dump(all_studies_or_analyses, f)
+
             else:
                 print(
                     f"Failed to retrieve data for page {page}. Status code: {response.status_code}"
@@ -71,6 +81,7 @@ def request_info(url, params):
 def get_studies_info(
     biome_name: str,
     outpath: str,
+    url:str = "https://www.ebi.ac.uk/metagenomics/api/v1/studies"
 ) -> pd.DataFrame:
     """
     Retrieve information for all MGnify studies for a given biome.
@@ -91,19 +102,20 @@ def get_studies_info(
     - biomes: The biomes associated with the study.
     """
 
-    # Set the URL for the GET request to retrieve all studies
-    url = "https://www.ebi.ac.uk/metagenomics/api/v1/studies"
-
     # Set the query parameters for the GET request
     params = {"biome_name": biome_name}
 
     # Retrieve all studies
-    all_studies_data = request_info(url, params)
+    all_studies_data = request_info(
+        url, 
+        params,
+        os.path.join(outpath, "Mgnify_studies.json")
+    )
     print("Studies request complete.")
 
     # Export the result of the request to a JSON file
-    with open(os.path.join(outpath, "Mgnify_studies.json"), "w") as outfile:
-        json.dump(all_studies_data, outfile)
+    # with open(os.path.join(outpath, "Mgnify_studies.json"), "w") as outfile:
+    #     json.dump(all_studies_data, outfile)
 
     # Extract the desired attributes and create a DataFrame
     study_list = []
@@ -132,6 +144,7 @@ def get_analyses_info(
     biome_name: str,
     experiment_types: str | list,
     outpath: str,
+    url = "https://www.ebi.ac.uk/metagenomics/api/v1/analyses"
 ) -> pd.DataFrame:
     """
     Retrieve information for all MGnify analyses for a given biome and experiment types.
@@ -154,9 +167,6 @@ def get_analyses_info(
     - instrument_platform: The platform used for the instrument.
     """
 
-    # Set the URL for the GET request to retrieve all analyses
-    url = "https://www.ebi.ac.uk/metagenomics/api/v1/analyses"
-
     # Set the query parameters for the GET request
     params = {
         "biome_name": biome_name,  # Replace with the biome name of interest
@@ -176,12 +186,16 @@ def get_analyses_info(
         "include": "downloads",
     }
     # Retrieve all analyses
-    all_analysis_data = request_info(url, params)
+    all_analysis_data = request_info(
+        url, 
+        params,
+        os.path.join(outpath, "Mgnify_studies.json")
+    )
     print("Analyses request complete.")
 
     # Export the result of the request to a JSON file
-    with open(os.path.join(outpath, "Mgnify_analyses.json"), "w") as outfile:
-        json.dump(all_analysis_data, outfile)
+    # with open(os.path.join(outpath, "Mgnify_analyses.json"), "w") as outfile:
+    #     json.dump(all_analysis_data, outfile)
 
     # Create a list of dictionaries with the desired columns
     analysis_list = []
