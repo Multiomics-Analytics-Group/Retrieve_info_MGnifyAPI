@@ -122,6 +122,13 @@ def get_studies_info(
     # with open(os.path.join(outpath, "Mgnify_studies.json"), "w") as outfile:
     #     json.dump(all_studies_data, outfile)
 
+
+def studies_json_to_df(json_file:str) -> pd.DataFrame:
+
+    # load json file
+    with open(json_file, 'r') as file:
+        all_studies_data = json.load(file)
+
     # Extract the desired attributes and create a DataFrame
     study_list = []
     for study in all_studies_data:
@@ -202,6 +209,13 @@ def get_analyses_info(
     # with open(os.path.join(outpath, "Mgnify_analyses.json"), "w") as outfile:
     #     json.dump(all_analysis_data, outfile)
 
+
+def analyses_json_to_df(json_file:str) -> pd.DataFrame:
+
+    # load json file
+    with open(json_file, 'r') as file:
+        all_analysis_data = json.load(file)
+        
     # Create a list of dictionaries with the desired columns
     analysis_list = []
     for analysis in all_analysis_data:
@@ -245,7 +259,7 @@ def get_analyses_info(
     return df_analyses_mgnify
 
 
-def get_studies_and_analyses_summary(
+def get_studies_and_analyses_dfs(
     df_studies_mgnify: pd.DataFrame,
     df_analyses_mgnify: pd.DataFrame,
 ):
@@ -333,4 +347,26 @@ def get_studies_and_analyses_summary(
             [df_studies_mgnify, study_data], ignore_index=True
         )
 
+    return df_analyses_mgnify_def, df_studies_mgnify
+
+
+# Putting it all together
+def get_studies_and_analyses_summary(
+    biome_name: str,
+    experiment_types: str | list,
+    outpath: str,
+):
+
+    # request study and analyses info from mgnify
+    get_studies_info(biome_name, outpath)
+    get_analyses_info(biome_name, experiment_types, outpath)
+
+    # convert json files to dataframes
+    df_studies_mgnify = studies_json_to_df(os.path.join(outpath, "Mgnify_studies.json"))
+    df_analyses_mgnify = analyses_json_to_df(os.path.join(outpath, "Mgnify_analyses.json"))
+
+    # get summary of studies and analyses
+    df_analyses_mgnify_def, df_studies_mgnify = get_studies_and_analyses_dfs(
+        df_studies_mgnify, df_analyses_mgnify
+    )
     return df_analyses_mgnify_def, df_studies_mgnify
