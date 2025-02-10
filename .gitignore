@@ -23,3 +23,10 @@ outputs/mgnify_analysis.csv
 outputs/mgnify_studies.csv
 outputs/mgnify_studies.json
 outputs/unique_mgys_studies_ids.txt
+*.pyc
+*/__pycache__/
+*/.ipynb_checkpoints/
+*/.DS_Store
+*/.idea/
+*/.vscode/
+*/.pytest_cache
