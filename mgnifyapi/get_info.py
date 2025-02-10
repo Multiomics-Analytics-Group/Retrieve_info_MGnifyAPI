@@ -19,6 +19,7 @@ import requests
 import pandas as pd
 import json
 import os
+import time
 
 
 # Define functions to interact with the MGnify API
@@ -26,6 +27,7 @@ def request_info(
         url:str, 
         params:dict,
         outfile:str|None=None,
+        wait_time:int=1
     ):
     """Function to retrieve information for all MGnify studies or analyses for a given biome from a GET request
     Input: url (str) - URL for the GET request, e.g. https://www.ebi.ac.uk/metagenomics/api/v1/analyses
@@ -64,6 +66,9 @@ def request_info(
                 if outfile:
                     with open(outfile, "w") as f:
                         json.dump(all_studies_or_analyses, f)
+
+                # add waiting time to avoid overloading the server
+                time.sleep(wait_time)
 
             else:
                 print(
