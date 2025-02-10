@@ -12,6 +12,7 @@
 # ------------------------------------------------------------------------------------------------------
 import os
 import requests
+import json
 
 def get_results_info_from_MGnifystudy(study_accession):
     '''Function to retrieve information about results for a given MGnify study
@@ -33,6 +34,7 @@ def get_results_info_from_MGnifystudy(study_accession):
         print(f"Error: {response.status_code}")
         return None
 
+
 def download_and_save_MGnifystudy_results(url, file_name, download_folder):
     '''Function to download and save results for a given MGnify study
     Input: url (str) - URL for the GET request, 
@@ -48,3 +50,41 @@ def download_and_save_MGnifystudy_results(url, file_name, download_folder):
         print(f"File '{file_name}' downloaded and saved in '{download_folder}'.")
     else:
         print(f"Failed to download file from {url}. Status code: {response.status_code}")
+
+
+# Putting it all together
+def process_study_results(
+        summary_results_study: requests.Response.json,
+        download_folder: str,
+        study_accession: str
+    ):
+
+    # Create a folder for the study
+    study_directory = os.path.join(download_folder, study_accession)
+    try:
+        os.makedirs(study_directory, exist_ok=True)
+        print(f"Study directory created: {study_directory}")
+    except Exception as e:
+        print(f"Error creating study directory: {e}")
+
+    # Export the result of the original request to a JSON file and save it in the study directory
+    request_file_path = os.path.join(
+        study_directory, 
+        f"{study_accession}_results_info.json"
+    )
+    with open(request_file_path, "w") as outfile:
+        json.dump(summary_results_study, outfile)    
+
+    # Iterate through the results and download the desired file type
+    print("Processing results for the MGnify study:")
+    for result in summary_results_study["data"]:
+        # Set the variables for the result to download
+        alias = result["attributes"]["alias"]
+        # label = result["attributes"]["description"]["label"]
+        # file_format = result["attributes"]["file-format"]["name"]
+        download_link = result["links"]["self"]
+
+        # Define the file name and download it
+        file_name = f"{study_accession}_{alias}"
+        download_and_save_MGnifystudy_results(download_link, file_name, study_directory)
+    
