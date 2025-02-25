@@ -1,0 +1,9 @@
+search:
+  biome_name : "root:Engineered:wastewater"
+
+output paths:
+  study info: "output"
+
+urls:
+  study info: "https://www.ebi.ac.uk/metagenomics/api/v1/studies"
+  
