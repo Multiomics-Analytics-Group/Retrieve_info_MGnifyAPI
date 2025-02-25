@@ -72,21 +72,22 @@ def request_info(
 
             else:
                 print(
-                    f"Failed to retrieve data for page {page}. Status code: {response.status_code}"
+                    f"Failed to retrieve data for page {page}. Status code: {response.status_code}. {response.url}"
                 )
                 break
 
         print("Data retrieval complete.")
         return all_studies_or_analyses
     else:
-        print(f"Failed to retrieve page info. Status code: {response.status_code}")
+        print(f"Failed to retrieve page info. Status code: {response.status_code}. {response.url}")
         return []  # Return an empty list if the request was not successful
 
 
 def get_studies_info(
     biome_name: str,
     outpath: str,
-    url:str = "https://www.ebi.ac.uk/metagenomics/api/v1/studies"
+    url:str = "https://www.ebi.ac.uk/metagenomics/api/v1/studies",
+    study_file:str="mgnify_studies.json",
 ) -> pd.DataFrame:
     """
     Retrieve information for all MGnify studies for a given biome.
@@ -114,17 +115,22 @@ def get_studies_info(
     all_studies_data = request_info(
         url, 
         params,
-        os.path.join(outpath, "Mgnify_studies.json")
+        os.path.join(outpath, study_file)
     )
     print("Studies request complete.")
 
     # Export the result of the request to a JSON file
     # with open(os.path.join(outpath, "Mgnify_studies.json"), "w") as outfile:
     #     json.dump(all_studies_data, outfile)
+    return all_studies_data
 
 
-def studies_json_to_df(json_file:str) -> pd.DataFrame:
+def studies_json_to_df(
+    outpath:str,
+    study_file:str="mgnify_studies.json",
+) -> pd.DataFrame:
 
+    json_file = os.path.join(outpath, study_file)
     # load json file
     with open(json_file, 'r') as file:
         all_studies_data = json.load(file)
@@ -201,7 +207,7 @@ def get_analyses_info(
     all_analysis_data = request_info(
         url, 
         params,
-        os.path.join(outpath, "Mgnify_studies.json")
+        os.path.join(outpath, "Mgnify_analyses.json")
     )
     print("Analyses request complete.")
 
@@ -210,8 +216,12 @@ def get_analyses_info(
     #     json.dump(all_analysis_data, outfile)
 
 
-def analyses_json_to_df(json_file:str) -> pd.DataFrame:
+def analyses_json_to_df(
+    outpath:str, 
+    analyses_file:str="mgnify_analyses.json",
+) -> pd.DataFrame:
 
+    json_file = os.path.join(outpath, analyses_file)
     # load json file
     with open(json_file, 'r') as file:
         all_analysis_data = json.load(file)
@@ -262,7 +272,9 @@ def analyses_json_to_df(json_file:str) -> pd.DataFrame:
 def get_studies_and_analyses_dfs(
     df_studies_mgnify: pd.DataFrame,
     df_analyses_mgnify: pd.DataFrame,
-):
+    outpath:str,
+    combo_info_file:str="df_studies_analyses.csv",
+)->pd.DataFrame:
     """
     Generate a summary of MGnify studies and analyses.
     This function takes two DataFrames containing studies and analyses information,
@@ -347,6 +359,11 @@ def get_studies_and_analyses_dfs(
             [df_studies_mgnify, study_data], ignore_index=True
         )
 
+    # Export the combined DataFrame to a CSV file
+    df_analyses_mgnify_def.to_csv(
+        os.path.join(outpath, combo_info_file), index=False
+    )
+
     return df_analyses_mgnify_def, df_studies_mgnify
 
 
@@ -355,6 +372,8 @@ def get_studies_and_analyses_summary(
     biome_name: str,
     experiment_types: str | list,
     outpath: str,
+    study_file:str="mgnify_studies.json",
+    analysis_file:str="mgnify_analyses.json",
 ):
 
     # request study and analyses info from mgnify
@@ -362,8 +381,8 @@ def get_studies_and_analyses_summary(
     get_analyses_info(biome_name, experiment_types, outpath)
 
     # convert json files to dataframes
-    df_studies_mgnify = studies_json_to_df(os.path.join(outpath, "Mgnify_studies.json"))
-    df_analyses_mgnify = analyses_json_to_df(os.path.join(outpath, "Mgnify_analyses.json"))
+    df_studies_mgnify = studies_json_to_df(os.path.join(outpath, study_file))
+    df_analyses_mgnify = analyses_json_to_df(os.path.join(outpath, analysis_file))
 
     # get summary of studies and analyses
     df_analyses_mgnify_def, df_studies_mgnify = get_studies_and_analyses_dfs(
