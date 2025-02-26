@@ -162,7 +162,8 @@ def get_analyses_info(
     biome_name: str,
     experiment_types: str | list,
     outpath: str,
-    url = "https://www.ebi.ac.uk/metagenomics/api/v1/analyses"
+    url = "https://www.ebi.ac.uk/metagenomics/api/v1/analyses",
+    analyses_file:str="mgnify_analyses.json",
 ) -> pd.DataFrame:
     """
     Retrieve information for all MGnify analyses for a given biome and experiment types.
@@ -207,7 +208,7 @@ def get_analyses_info(
     all_analysis_data = request_info(
         url, 
         params,
-        os.path.join(outpath, "Mgnify_analyses.json")
+        os.path.join(outpath, analyses_file)
     )
     print("Analyses request complete.")
 
@@ -332,26 +333,3 @@ def join_studies_and_analyses_dfs(
 
     return df_combo, df_s_info
 
-
-# Putting it all together
-def get_studies_and_analyses_summary(
-    biome_name: str,
-    experiment_types: str | list,
-    outpath: str,
-    study_file:str="mgnify_studies.json",
-    analysis_file:str="mgnify_analyses.json",
-):
-
-    # request study and analyses info from mgnify
-    get_studies_info(biome_name, outpath)
-    get_analyses_info(biome_name, experiment_types, outpath)
-
-    # convert json files to dataframes
-    df_studies_mgnify = studies_json_to_df(os.path.join(outpath, study_file))
-    df_analyses_mgnify = analyses_json_to_df(os.path.join(outpath, analysis_file))
-
-    # get summary of studies and analyses
-    df_analyses_mgnify_def, df_studies_mgnify = get_studies_and_analyses_dfs(
-        df_studies_mgnify, df_analyses_mgnify
-    )
-    return df_analyses_mgnify_def, df_studies_mgnify

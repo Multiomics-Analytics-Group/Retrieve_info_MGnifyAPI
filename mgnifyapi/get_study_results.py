@@ -13,7 +13,7 @@
 import os
 import requests
 import json
-from utils import create_folder
+from mgnifyapi.utils import create_folder
 
 
 def get_study_result_info(

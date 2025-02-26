@@ -156,7 +156,7 @@ if __name__ == "__main__":
             )
             get_analyses_info(
                 biome_name=biome_name,
-                experiment_types=exp_types_to_do,
+                experiment_types=exp_type,
                 outpath=outpath,
                 url=analyses_url,
                 analyses_file=f"{exp_type}_{analyses_file}",
@@ -168,10 +168,10 @@ if __name__ == "__main__":
         for exp_type in experiment_types:
             fname = os.path.join(outpath, f"{exp_type}_{analyses_file}")
             logger.info(f"Reading in {fname}")
-            with open(fname, "rb") as infile:
-                all_analyses_info.append(json.load(infile))
+            with open(fname, "r") as infile:
+                all_analyses_info += json.load(infile)
         # save to one json
-        with open(os.path.join(outpath, analyses_file), "wb") as outfile:
+        with open(os.path.join(outpath, analyses_file), "w") as outfile:
             json.dump(all_analyses_info, outfile)
 
         # update progress
@@ -219,7 +219,7 @@ if __name__ == "__main__":
         logger.info(f"Skipping {len(existing_folders)} studies: {existing_folders}")
         logger.info(f"Downloading data for {len(studies_to_download)} studies: {studies_to_download}")
         # downlaoding data
-        for study_id in study_list:
+        for study_id in studies_to_download:
             logger.info(f"Downloading data for study {study_id}")
             process_study_results(
                 study_id,

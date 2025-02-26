@@ -249,7 +249,7 @@ def get_args(prog_name: str, others: dict = {}):
         "-c",
         "--config",
         action="store",
-        default="demo/config.yaml",
+        default="config.yaml",
         help="provide path to config yaml file",
     )
     args = parser.parse_args()
