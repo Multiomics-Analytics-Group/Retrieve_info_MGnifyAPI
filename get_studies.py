@@ -4,225 +4,80 @@ from mgnifyapi.utils import (
     get_logger,
     assert_nonempty_keys,
     assert_nonempty_vals,
-    normalize_url,
 )
 
-from mgnifyapi import get_study_results
-from mgnifyapi import get_biome_info
-import matplotlib.pyplot as plt
+from mgnifyapi.get_biome_info import (
+    get_studies_info,
+    get_analyses_info,
+    studies_json_to_df,
+    analyses_json_to_df,
+    join_studies_and_analyses_dfs,
+)
+from mgnifyapi.get_study_results import (
+    process_study_results,
+)
 
 import os
 import logging
 import json
+import pandas as pd
 
-def resume_progress(
+def check_progress(
     outpath:str,
     study_file:str="mgnify_studies.json",
     analyses_file:str="mgnify_analyses.json",
-    combo_info_file:str="df_studies_analyses.csv",
-    logger: logging.Logger|None = None,
+    final_studies_file:str="df_studies.csv",
+    final_analyses_file:str="df_analyses.csv",
 ):
-    # init
-    start_at = 0
-
-    if os.path.exists(os.path.join(outpath, study_file)):
-        start_at = "download_study_info"
-    if os.path.exists(os.path.join(outpath, analyses_file)):
-        start_at = "download_analyses_info"
-    if 
-
-    return start_at
-
-
-
-def download_list(
-        config_filepath,
-        biome_name,
-        exp_name,
-        out_dir,
-        study_url,
-        analysis_url,
-        study_file:str="mgnify_studies.json",
-        analysis_file:str="mgnify_analyses.json",
-        logger: logging.Logger|None = None, 
-):
-    
-    if logger:
-        verbose = logger.info
-    else:
-        verbose = print
-
-    # also resturns as a json
-    verbose(f"Requesting studies to")
-    study_info = get_biome_info.get_studies_info(
-        biome_name = biome_name,
-        outpath=out_dir,
-        url=study_url,
-        study_file=study_file,
-    )
-    # instead to df
-    study_info = get_biome_info.studies_json_to_df(
-        "output-test/mgnify_studies.json"
-    )
-
-def get_rag_response(
-        config_filepath, 
-        prompt, 
-        logger: logging.Logger|None = None, 
-        save_outputs:bool=False
+    """
+    TODO snakemake or something would be better than this
+    """
+    # check if files exist
+    if (
+        (os.path.exists(os.path.join(outpath, final_studies_file))) &\
+        (os.path.exists(os.path.join(outpath, final_analyses_file)))
     ):
+        completed = "joined_study_analyses"
+    elif os.path.exists(os.path.join(outpath, analyses_file)):
+        completed = "downloaded_analyses_info"
+    elif os.path.exists(os.path.join(outpath, study_file)):
+        completed = "downloaded_study_info"
+    else:
+        # no steps have been completed so start at beginning
+        completed = None
+    return completed
 
-    ## TODO PRECONDITION CHECKS
-    # allow logging if ran as script
+
+def check_analyses_progress(
+    outpath:str,
+    experiment_types:list, 
+    analyses_file:str="mgnify_analyses.json",
+    logger: logging.Logger|None = None, 
+):
+
     if logger:
         verbose = logger.info
     else:
         verbose = print
 
-    ## LOAD CONFIG PARAMETERS
-    verbose(f"Path to config file: {config_filepath}")
-    # load config params
-    verbose("Loading config params ... ")
-    config = config_loader(config_filepath)
-    assert_nonempty_keys(config)
-    assert_nonempty_vals(config)
-    col_name = config["pubmed_rag"]["collection name"]
-    llama_model = config["pubmed_rag"]["llama model"]
-    llama_api = config["pubmed_rag"]["llama_api"]
-    rag_out_path = config["pubmed_rag"]["rag output folder"]
-    user = config["apoc_load_queries"]["neo4j"]["username"]
-    pwd = config["apoc_load_queries"]["neo4j"]["password"]
-    host = config["apoc_load_queries"]["neo4j"]["host"]
-    bolt_port = config["apoc_load_queries"]["neo4j"]["bolt port"]
-    http_port = config["apoc_load_queries"]["neo4j"]["http port"]
-    verbose(f"Configuration: {config}")
+    # convert to list if string
+    if isinstance(experiment_types, str):
+        experiment_types = [experiment_types]
 
-    ## MAIN
-    # get and check uris
-    bolt_uri = normalize_url(host, bolt_port, scheme='bolt')
-    http_uri = normalize_url(host, http_port)
+    verbose(f"Checking progress of analyses for {experiment_types}")
+    # if filename doesn't exist still to download
+    exp_types_to_do = []
+    for exp_type in experiment_types:
+        fname = os.path.join(outpath, f"{exp_type}_{analyses_file}")
+        if os.path.exists(fname):
+            verbose(f"File {fname} exists. Skipping download of {exp_type} analyses info.")
+        else:
+            verbose(f"File {fname} does not exist. To download {exp_type} analyses info still.")
+            exp_types_to_do.append(exp_type)
 
-    verbose(f"Searching question '{prompt}' in {col_name}")
-    similar_vectors = find_similar_vectors(
-        path_to_config=config_filepath, query=prompt, logger=logger
-    )
-
-    rag_pmids = get_pmids_from_rag(similar_vectors)
-    verbose(f"Pubmed articles used for context: {rag_pmids}")
-
-    verbose("Preparing llama role and task")
-    role = """You are a LLM-RAG model with expertise on biological knowledge graphs (KGs). If the retrieved context does not provide useful information to answer the question, say that you do not know."""
-
-    task = f"""
-    Use the following pieces of information in the "Context" section to provide an answer to the "Question".
-    Each context is annotated with a dictionary of metadata that includes: 
-        1. "pmid" the pubmed ID of the Publication that the context is from.
-        2. "KG" the name of the knowledge graph (KG) that is the focus of the publication.
-    Please check the context information carefully and do not use information that is not relevant to the question. Your response must have a word count under 50.
-    """
-
-    # getting prompt
-    llm_prompt = init_prompt(
-        query=prompt, results=similar_vectors, role=role, task=task
-    )
-
-    # adding context from BKGR!!!
-    verbose(f"Connecting to BKGR Neo4j database at {bolt_uri}...")
-    # connect to neo4j instance
-    connection = Neo4jConnection(user=user, pwd=pwd, uri=bolt_uri)
-    # check connection
-    assert isinstance(
-        connection.neo4j_version, str
-    ), f"Issue with Neo4j connection: {connection.neo4j_version}"
-
-    verbose("Getting BKGR subgraph nodes and edges... ")
-    # write cypher query
-    cypher_query_pyvis = write_subgraph_cypher(
-        connection=connection, pmids=rag_pmids, as_subgraph=False
-    )
-    verbose(cypher_query_pyvis)
-    # run it
-    subgraph = get_subgraph(connection=connection, cypher_query=cypher_query_pyvis)
-    nodes, edges = parse_subgraph_cypher(subgraph)
-    # getting kg names
-    pmid_kg_mapping = annotate_with_kg(nodes, edges)
-    # also annot with subg
-    #subgraph_as_text = annotate_with_subgraph(nodes, edges)
-    verbose("Adding KG name and subgraph (as text) metadata to LLM prompt")
-    # annote
-    for k, v in pmid_kg_mapping.items():
-        llm_prompt[1]["content"] = llm_prompt[1]["content"].replace(k, v)
-    # with subgraph
-    # llm_prompt[1]["content"] += "Network:\n"
-    # llm_prompt[1]["content"] += f'"{subgraph_as_text}"'
-
-    verbose(f"Whole prompt length: {len(llm_prompt[0]['content'].split(' '))} {len(llm_prompt[1]['content'].split(' '))}")
-    verbose(f"{llm_prompt}")
-    # to the LLM
-    llm_response = llama3(prompt=llm_prompt, model=llama_model, api=llama_api)
-    # return response
-    whole_response = f"""
-    ### Question: 
-    {prompt}
+    return exp_types_to_do
     
-    ### Response: 
-    {llm_response}
-    
-    #### Context given: 
-    {list(pmid_kg_mapping.values())}
-    """
 
-    #verbose(whole_response)
-
-    # GETTING VISUALISATIONS
-    verbose("Getting BKGR subgraph in Neo4j... ")
-    cypher_query_neo4j = write_subgraph_cypher(
-        connection=connection, pmids=rag_pmids, as_subgraph=True
-    )
-    url = open_bkgr_subgraph_in_neo4j(
-        connection=connection,
-        cypher_query=cypher_query_neo4j,
-        uri=http_uri,
-        auto_open=False,
-    )
-    verbose(f"Neo4j subgraph URL: {url}")
-    verbose("Complete.")
-    connection.close()
-
-    verbose(f"Creating subgraph in networkx..")
-    nx_subgraph = create_nx_subgraph(nodes=nodes, edges=edges)
-
-    # for check
-    html_content = None
-    # if want to output file
-    if save_outputs:
-        # create subgraph vis as html file
-        pyvis_out = os.path.join(rag_out_path, "subgraph.html")
-        verbose(f"Creating subgraph in pyvis. Saving to {pyvis_out}")
-        create_subgraph_in_pyvis(
-            nx_graph=nx_subgraph, 
-            out_path=pyvis_out, 
-            auto_open=True)
-        # save llm response as md
-        # Specify the file name
-        file_name = "RAG_response.md"
-        fully = os.path.join(rag_out_path, file_name)
-        # Open the file in write mode and save the string
-        with open(fully, "w") as file:
-            file.write(whole_response)
-        verbose(f"LLM response as .md saved to {fully}")
-
-    else: 
-        # get as html content?
-        html_content = create_subgraph_in_pyvis(
-            nx_graph=nx_subgraph, 
-        )
-        # check
-        if html_content is None:
-            raise AttributeError("Issue creating subgraph as html")
-
-    return whole_response, html_content
-    
 if __name__ == "__main__":
     ## GET ARGS
     # init
@@ -237,14 +92,154 @@ if __name__ == "__main__":
     logger = get_logger()
     logger.info(f"Arguments: {args}")
 
-    llm_response, subgraph_html = get_rag_response(
-        config_filepath,
-        prompt,
-        logger,
-        save_outputs=True
-    )
+    ## LOAD CONFIG PARAMETERS
+    logger.info(f"Path to config file: {config_filepath}")
+    # load config params
+    logger.info("Loading config params ... ")
+    config = config_loader(config_filepath)
+    assert_nonempty_keys(config)
+    assert_nonempty_vals(config)
+    outpath = config["output path"]
+    biome_name = config['search params']["biome name"]
+    study_url = config["urls"]["study info"]
+    analyses_url = config["urls"]["analyses info"]
+    experiment_types = config['search params']["experiment types"]
+    if isinstance(experiment_types, str):
+        experiment_types = [experiment_types]    
+    logger.info(f"Configuration: {config}")
 
-    print(llm_response, subgraph_html)
+    ## DEFAULT FILE NAMES
+    study_file="mgnify_studies.json"
+    analyses_file="mgnify_analyses.json"
+    final_studies_file="df_studies.csv"
+    final_analyses_file="df_analyses.csv"
+
+    ## MAIN FUNCTION
+    # Check previous progress
+    logger.info(f"Progress check based on files in {outpath}")
+    progress = check_progress(
+        outpath=outpath,
+        study_file=study_file,
+        analyses_file=analyses_file,
+        final_studies_file=final_studies_file,
+        final_analyses_file=final_analyses_file,
+    )
+    logger.info(f"Progress is: {progress}")
+
+    # Step one: download study info
+    if progress is None: # then start from beginning
+        logger.info("Initiating Step One: Downloading study info")
+        df_studies_mgnify = get_studies_info(
+            biome_name=biome_name,
+            outpath=outpath,
+            url=study_url,
+            study_file=study_file
+        )
+        # update progress
+        progress = "downloaded_study_info"
+
+    # Step two: download analyses info
+    if progress == "downloaded_study_info":
+        logger.info("Step Two: Downloading analyses info")
+
+        # check progress of analyses
+        exp_types_to_do = check_analyses_progress(
+            outpath=outpath,
+            experiment_types=experiment_types,
+            analyses_file=analyses_file,
+            logger=logger
+        )
+        # download one or more experiment types iteratively, saving to individual json files
+        for exp_type in exp_types_to_do:
+            logger.info(
+                f"Downloading {exp_type} analyses info to {os.path.join(outpath, f'{exp_type}_{analyses_file}')}"
+            )
+            get_analyses_info(
+                biome_name=biome_name,
+                experiment_types=exp_types_to_do,
+                outpath=outpath,
+                url=analyses_url,
+                analyses_file=f"{exp_type}_{analyses_file}",
+            )
+
+        # read in analyses json(s) and save to one csv 
+        logger.info(f"Reading in analyses json(s) and saving to {os.path.join(outpath, analyses_file)}")
+        all_analyses_info = []
+        for exp_type in experiment_types:
+            fname = os.path.join(outpath, f"{exp_type}_{analyses_file}")
+            logger.info(f"Reading in {fname}")
+            with open(fname, "rb") as infile:
+                all_analyses_info.append(json.load(infile))
+        # save to one json
+        with open(os.path.join(outpath, analyses_file), "wb") as outfile:
+            json.dump(all_analyses_info, outfile)
+
+        # update progress
+        progress = "downloaded_analyses_info"
+
+    # Step three: join study and analyses info
+    if progress == "downloaded_analyses_info":
+        logger.info("Step Three: Joining study and analyses info")
+        # load jsons
+        logger.info(f"Loading {os.path.join(outpath, study_file)}")
+        df_studies_mgnify = studies_json_to_df(outpath, study_file)
+        logger.info(f"Loading {os.path.join(outpath, analyses_file)}")
+        df_analyses_mgnify = analyses_json_to_df(outpath, analyses_file)
+
+        # join dfs
+        logger.info(f"Joining study and analyses dfs and saving to {os.path.join(outpath, final_studies_file)} and {os.path.join(outpath, final_analyses_file)}")
+        df_mgnify = join_studies_and_analyses_dfs(
+            df_studies_mgnify,
+            df_analyses_mgnify,
+            outpath,
+            final_studies_file,
+            final_analyses_file
+        )
+
+        # update progress
+        progress = "joined_study_analyses"
+
+    # Step four: Downloading data
+    if progress == "joined_study_analyses":
+        logger.info("Step Four: Downloading study data")
+
+        # reading in relevant studies 
+        df_studies = pd.read_csv(os.path.join(outpath, final_studies_file))
+        study_list = df_studies["study_id"].unique().tolist()
+        logger.info(f"Downloading data for # studies: {len(study_list)}")
+
+        # check if study id in existing folders
+        existing_folders = []
+        studies_to_download = []
+        for study_id in study_list:
+            if os.path.isdir(os.path.join(outpath, study_id)):
+                existing_folders.append(study_id)
+            else: 
+                studies_to_download.append(study_id)
+        logger.info(f"Skipping {len(existing_folders)} studies: {existing_folders}")
+        logger.info(f"Downloading data for {len(studies_to_download)} studies: {studies_to_download}")
+        # downlaoding data
+        for study_id in study_list:
+            logger.info(f"Downloading data for study {study_id}")
+            process_study_results(
+                study_id,
+                outpath,
+                base_url=study_url
+            )
+
+        # update progress
+        progress = "downloaded_data"
+
+        # Step five: 
+        if progress == "downloaded_data":
+
+            logger.info(
+                f"""
+                Process complete. 
+                Info and data from biome {biome_name} for experiments {experiment_types} 
+                has been downloaded and saved to {outpath}.
+                """
+            )
 
 else:
-    print("get_rag_answer... imported. Script not ran.")
+    print("Imported. Script not ran.")

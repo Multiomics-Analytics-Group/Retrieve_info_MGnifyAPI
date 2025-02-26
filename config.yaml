@@ -1,9 +1,9 @@
-search:
-  biome_name : "root:Engineered:wastewater"
+search params:
+  biome name : "root:Engineered:wastewater"
+  experiment types: ["metagenomic", "metatranscriptomic", "assembly"]
 
-output paths:
-  study info: "output"
+output path: "/Users/anglup/GitHub/mgnifyapi/notebooks/output"
 
 urls:
   study info: "https://www.ebi.ac.uk/metagenomics/api/v1/studies"
-  
+  analyses info: "https://www.ebi.ac.uk/metagenomics/api/v1/analyses"
