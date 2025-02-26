@@ -269,11 +269,12 @@ def analyses_json_to_df(
     return df_analyses_mgnify
 
 
-def get_studies_and_analyses_dfs(
+def join_studies_and_analyses_dfs(
     df_studies_mgnify: pd.DataFrame,
     df_analyses_mgnify: pd.DataFrame,
     outpath:str,
-    combo_info_file:str="df_studies_analyses.csv",
+    final_studies_file:str="df_studies.csv",
+    final_analyses_file:str="df_analyses.csv",
 )->pd.DataFrame:
     """
     Generate a summary of MGnify studies and analyses.
@@ -287,13 +288,14 @@ def get_studies_and_analyses_dfs(
         - df_analyses_mgnify_def (pd.DataFrame): Merged DataFrame with analyses and studies information.
         - df_studies_mgnify (pd.DataFrame): DataFrame with unique study information.
     """
-    # Join the two DataFrames using the index
-    df_analyses_mgnify_def = df_analyses_mgnify.merge(
+    # Join the two DataFrames on study_id column
+    # on left to filter out studies without analyses
+    df_combo = df_analyses_mgnify.merge(
         df_studies_mgnify, on="study_id", how="left"
-    )
+    ).dropna(subset=['study_id'])
 
     # Rearrange the columns
-    df_analyses_mgnify_def = df_analyses_mgnify_def[
+    df_combo = df_combo[
         [
             "analysis_id",
             "sample_id",
@@ -310,61 +312,25 @@ def get_studies_and_analyses_dfs(
         ]
     ]
 
-    # Create a dataframe with the unique study IDs
-    study_ids = pd.DataFrame(
-        df_analyses_mgnify_def["study_id"].unique(), columns=["study_id"]
-    )
+    # now only unique study info 
+    df_s_info = df_combo[[
+        "study_id",
+        "study_name",
+        "bioproject",
+        "centre_name",
+        "n_samples",
+        "biomes",
+        "experiment_type",
+        "pipeline_version",
+    ]].copy()
 
-    # Remove NaN values
-    study_ids = study_ids.dropna()
+    df_s_info = df_s_info.drop_duplicates()
 
-    # Create an empty DataFrame to store the extracted information
-    df_studies_mgnify = pd.DataFrame(
-        columns=[
-            "study_id",
-            "study_name",
-            "bioproject",
-            "centre_name",
-            "n_samples",
-            "biomes",
-            "experiment_type",
-            "pipeline_version",
-        ]
-    )
+    # Export dfs to csvs
+    df_combo.to_csv(os.path.join(outpath, final_analyses_file), index=False)
+    df_s_info.to_csv(os.path.join(outpath, final_studies_file), index=False)
 
-    # Iterate over the rows in df_unique_ids
-    for _, row in study_ids.iterrows():
-        study_id = row["study_id"]
-
-        # Retrieve information for the current unique ID from the first row of df_original
-        info = df_analyses_mgnify_def[
-            df_analyses_mgnify_def["study_id"] == study_id
-        ].iloc[0][
-            [
-                "study_name",
-                "bioproject",
-                "centre_name",
-                "n_samples",
-                "biomes",
-                "experiment_type",
-                "pipeline_version",
-            ]
-        ]
-
-        # Create a new DataFrame with the study_id and extracted information
-        study_data = pd.DataFrame({"study_id": [study_id], **info.to_dict()}, index=[0])
-
-        # Concatenate the new DataFrame with df_studies_mgnify
-        df_studies_mgnify = pd.concat(
-            [df_studies_mgnify, study_data], ignore_index=True
-        )
-
-    # Export the combined DataFrame to a CSV file
-    df_analyses_mgnify_def.to_csv(
-        os.path.join(outpath, combo_info_file), index=False
-    )
-
-    return df_analyses_mgnify_def, df_studies_mgnify
+    return df_combo, df_s_info
 
 
 # Putting it all together
