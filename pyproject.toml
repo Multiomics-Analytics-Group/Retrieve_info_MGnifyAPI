@@ -14,6 +14,7 @@ jsonapi-client = "^0.9.9"
 requests = "^2.32.3"
 azure-storage-blob = "^12.24.1"
 pyyaml = "^6.0.2"
+matplotlib = "^3.10.0"
 
 
 [tool.poetry.group.dev.dependencies]
