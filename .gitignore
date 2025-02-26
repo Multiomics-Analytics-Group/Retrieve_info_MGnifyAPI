@@ -33,3 +33,4 @@ outputs/unique_mgys_studies_ids.txt
 */output-test/*
 */output-test2/*
 */output-test3/*
+*.log
