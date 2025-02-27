@@ -6,14 +6,17 @@ from mgnifyapi.utils import (
     assert_nonempty_vals,
 )
 
-from mgnifyapi.get_biome_info import (
+from mgnifyapi.retrieve_metadata import (
     get_studies_info,
     get_analyses_info,
     studies_json_to_df,
     analyses_json_to_df,
     join_studies_and_analyses_dfs,
+    get_sample_info,
+    sample_json_to_df,
+    join_analyses_and_sample_dfs
 )
-from mgnifyapi.get_study_results import (
+from mgnifyapi.download_studies import (
     process_study_results,
 )
 
@@ -26,6 +29,7 @@ def check_progress(
     outpath:str,
     study_file:str="mgnify_studies.json",
     analyses_file:str="mgnify_analyses.json",
+    sample_file:str="mgnify_samples.json",
     final_studies_file:str="df_studies.csv",
     final_analyses_file:str="df_analyses.csv",
 ):
@@ -38,6 +42,8 @@ def check_progress(
         (os.path.exists(os.path.join(outpath, final_analyses_file)))
     ):
         completed = "joined_study_analyses"
+    elif os.path.exists(os.path.join(outpath, sample_file)):
+        completed = "downloaded_sample_metadata"
     elif os.path.exists(os.path.join(outpath, analyses_file)):
         completed = "downloaded_analyses_info"
     elif os.path.exists(os.path.join(outpath, study_file)):
@@ -111,6 +117,7 @@ if __name__ == "__main__":
     ## DEFAULT FILE NAMES
     study_file="mgnify_studies.json"
     analyses_file="mgnify_analyses.json"
+    sample_file="mgnify_samples.json"
     final_studies_file="df_studies.csv"
     final_analyses_file="df_analyses.csv"
 
@@ -177,8 +184,25 @@ if __name__ == "__main__":
         # update progress
         progress = "downloaded_analyses_info"
 
-    # Step three: join study and analyses info
+
+    # New Step: downloading metadata
     if progress == "downloaded_analyses_info":
+        df_analyses_mgnify = analyses_json_to_df(outpath, analyses_file)
+        study_ids = df_analyses_mgnify["study_id"].unique().tolist()
+
+        sample_meta = get_sample_info(
+            study_ids,
+            outpath,
+            sample_file=sample_file,
+            base_url=study_url
+        )
+
+        # update progress
+        progress = "downloaded_sample_metadata"
+
+
+    # Step three: join study and analyses info
+    if progress == "downloaded_sample_metadata":
         logger.info("Step Three: Joining study and analyses info")
         # load jsons
         logger.info(f"Loading {os.path.join(outpath, study_file)}")
@@ -195,6 +219,8 @@ if __name__ == "__main__":
             final_studies_file,
             final_analyses_file
         )
+
+        
 
         # update progress
         progress = "joined_study_analyses"

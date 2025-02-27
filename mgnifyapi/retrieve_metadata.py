@@ -20,6 +20,10 @@ import pandas as pd
 import json
 import os
 import time
+from mgnifyapi.utils import (
+    create_folder, 
+    assert_path
+)
 
 
 def request_info(
@@ -33,7 +37,7 @@ def request_info(
            params (dict) - query parameters for the GET request, e.g. biome_name
     Output: all_studies_or_analyses (list) - list of json files with the data from all studies or analyses"""
 
-    print("Starting get request for data retrieval...")
+    print(f"Starting get request for data retrieval...\n{url}")
     response = requests.get(url, params=params)
 
     # Check if the request was successful
@@ -334,51 +338,113 @@ def join_studies_and_analyses_dfs(
 
 
 def get_sample_info(
-        study_accession:str, 
+        study_accessions:list, 
+        outpath:str,
+        sample_file:str="mgnify_samples.json",
         base_url: str = "https://www.ebi.ac.uk/metagenomics/api/v1/studies",
     ):
-    '''Function to retrieve metadata for all samples in a given MGnify study
-    Input: study_accession (str) - MGnify study accession for the GET request, e.g. "MGYS00001392"
-    Output: results_MGnify_study (json) - json file with the information of the samples metadata for the MGnify study'''
+    """
+    Retrieve metadata for all samples in a given MGnify study.
+    This function retrieves sample metadata from the MGnify API for the specified study accessions.
+    It processes the data to create a list of sample metadata.
+    The results are also exported to a JSON file.
+    Parameters:
+    study_accessions (list): List of MGnify study accessions, e.g., ["MGYS00001392"].
+    outpath (str): The path to the output folder where the JSON data will be saved.
+    sample_file (str): The name of the output JSON file.
+    base_url (str): The base URL for the MGnify API.
+    Returns:
+    list: List of JSON objects containing sample metadata for the specified studies.
+    """
+    ## PRECONDITIONS
+    if not isinstance(study_accessions, list):
+        #raise ValueError("study_accessions must be a list of strings.")
+        if isinstance(study_accessions, str):
+            study_accessions = [study_accessions]
+    if not isinstance(sample_file, str):
+        raise ValueError("sample_file must be a string.")
+    if not isinstance(base_url, str):
+        raise ValueError("base_url must be a string.")
+    # check outpath exists
+    create_folder(outpath)
+
+
+    ## MAIN FUNCTION
+    all_study_samples = []
+
+    # for each study
+    for study_accession in study_accessions:
+
+        # combine url and accession
+        endpoint = f"{base_url}/{study_accession}/samples"
+        params = {}
+
+        # make get request
+        all_samples = request_info(
+            endpoint,
+            params,
+            None,
+        )
+
+        # add to list
+        all_study_samples.extend(all_samples)
+
+        # iteratively overwrite output file
+        with open(os.path.join(outpath, sample_file), "w") as f:
+            json.dump(all_study_samples, f)
+    # save again?
+
+    return all_study_samples
+
+
+def sample_json_to_df(
+    outpath:str, 
+    sample_file:str="mgnify_samples.json",
+) -> pd.DataFrame:
     
-    # combine url and accession
-    endpoint = f"{base_url}/{study_accession}/samples"
-    params = {}
+    json_file = os.path.join(outpath, sample_file)
+    # load json file
+    with open(json_file, 'r') as file:
+        samples_metadata = json.load(file)
 
-    print(f"Making GET request to: {endpoint}")
-    response = requests.get(endpoint, params=params)
+    # Extract the desired attributes and create a DataFrame
+    sample_list = []
 
-    # Check if the request was successful
-    if response.status_code == 200:
-        # Retrieve the total number of items in the request and 
-        # the total number of pages
-        page_info = response.json()["meta"]["pagination"]
-        total_count = page_info["count"]
-        total_pages = page_info["pages"]
-        print(f"Total studies to retrieve: {total_count}")
-        print(f"Total pages: {total_pages}")
+    for sample in samples_metadata:
+        attributes = sample["attributes"]
+        sample_list.append({
+            "sample_id": sample["id"],
+            "sample_name": attributes["sample-name"],
+            "biosample": attributes["biosample"],
+            "sample_description": attributes["sample-desc"],
+            "latitude": attributes["latitude"],
+            "longitude": attributes["longitude"],
+            "geolocation": attributes["geo-loc-name"],
+            "biome": attributes["environment-biome"],
+            "biome_feature": attributes["environment-feature"],
+            "biome_material": attributes["environment-material"],
+        })
 
-        all_samples = []
-        page = 1
+    # Create a DataFrame from the list of dictionaries
+    df_samples_mgnify = pd.DataFrame(sample_list)
 
-        # Iterate through all pages and append the data to the list
-        while page <= total_pages:
-            print(f"Retrieving data for page {page}/{total_pages}")
+    return df_samples_mgnify
 
-            params["page"] = page
-            response = requests.get(endpoint, params=params)
 
-            if response.status_code == 200:
-                data = response.json()["data"]
-                all_samples.extend(data)
-                page += 1
-            else:
-                print(f"Failed to retrieve data for page {page}. Status code: {response.status_code}")
-                break
-
-        print("GET request successful. Data retrieval complete.")
-        return all_samples
-    else:
-        print(f"Failed to retrieve page info. Status code: {response.status_code}")
-        return []  # Return an empty list if the request was not successful
+def join_analyses_and_sample_dfs(
+    df_analyses_mgnify: pd.DataFrame,
+    df_samples_mgnify: pd.DataFrame,
+    outpath:str,
+    final_analyses_file:str="df_analyses.csv",
+)->pd.DataFrame:      
     
+        # Join the two DataFrames on study_id column
+    # on left to filter out studies without analyses
+    df_combo = df_analyses_mgnify.merge(
+        df_samples_mgnify, on="sample_id", how="left"
+    ).dropna(subset=['sample_id'])
+
+    # Export to csv
+    df_combo.to_csv(os.path.join(outpath, final_analyses_file), index=False)
+
+    return df_combo
