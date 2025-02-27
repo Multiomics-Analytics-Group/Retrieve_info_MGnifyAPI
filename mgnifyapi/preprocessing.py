@@ -110,7 +110,15 @@ def preprocess_abund_table_root(abund_table, tax_rank):
     taxonomic_df = taxonomic_df.iloc[1:, :]
 
     # Define the column names for this format
-    taxonomic_df.columns = ['Kingdom', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species']
+    taxonomic_df = taxonomic_df.rename(
+        columns={
+            i: tax_rank for i, tax_rank in enumerate(
+                ['Kingdom', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species']
+            )
+        },
+    )
+
+    #taxonomic_df.columns = ['Kingdom', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species']
     
     # Isolating abundance data
     abundance_df = abund_table.iloc[:, 1:]
@@ -149,7 +157,15 @@ def preprocess_abund_table_superkingdom(abund_table, tax_rank):
     taxonomic_df = abund_table[abund_table.columns[0]].str.split(';', expand=True)
 
     # Define the column names for this format
-    taxonomic_df.columns  = ['Superkingdom', 'Kingdom', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species']
+    # Define the column names for this format
+    taxonomic_df = taxonomic_df.rename(
+        columns={
+            i: tax_rank for i, tax_rank in enumerate(
+                ['Superkingdom', 'Kingdom', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species']
+            )
+        },
+    )
+    #taxonomic_df.columns  = ['Superkingdom', 'Kingdom', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species']
 
     # Remove the first row corresponding to the Root taxonomic rank
     taxonomic_df = taxonomic_df.iloc[1:, :]
