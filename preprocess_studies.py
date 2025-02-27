@@ -118,7 +118,14 @@ if __name__ == "__main__":
         )
 
         # Preprocess abundance tables
-        logger.info(f"Preprocessing abundance tables for study {study_id}")
+
+        # check if possible first .. 
+        if abund_table[abund_table.columns[0]].str.split(';', expand=True).drop(columns=0).shape[1] > 0:
+            logger.info(f"Preprocessing abundance tables for study {study_id}")
+        else:
+            logger.info(f"No phylum abundance table for study {study_id}")
+            continue
+
         abund_table_phylum = preprocess_abund_table_phylum(abund_table_phylum)
         abund_table_genus = preprocess_abund_table(abund_table, tax_rank="Genus")
 
