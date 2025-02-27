@@ -1,3 +1,17 @@
+"""
+------------------------------------------------------------------------------------------------------
+Description: This script retrieves Mgnify data and metadadta for a given biome and
+    data type (amplicon, shotgun metagenomics, metatranscriptomic, or assembly). 
+Version: 2.0
+License: MIT License
+Usage: python get_studies.py --config config.yaml
+Warning1: The script relies on the MGnify API, which could have high traffic. 
+    If the script fails, re-run later.
+Warning2: If the script exits due to Warning1 or manually, remove incomplete outputs 
+    to avoid errors in subsequent runs.
+------------------------------------------------------------------------------------------------------
+"""
+# Import libraries
 from mgnifyapi.utils import (
     config_loader,
     get_args,
@@ -25,6 +39,7 @@ import logging
 import json
 import pandas as pd
 
+
 def check_progress(
     outpath:str,
     study_file:str="mgnify_studies.json",
@@ -41,13 +56,13 @@ def check_progress(
         (os.path.exists(os.path.join(outpath, final_studies_file))) &\
         (os.path.exists(os.path.join(outpath, final_analyses_file)))
     ):
-        completed = "joined_study_analyses"
+        completed = "merged_metadata_tables"
     elif os.path.exists(os.path.join(outpath, sample_file)):
         completed = "downloaded_sample_metadata"
     elif os.path.exists(os.path.join(outpath, analyses_file)):
-        completed = "downloaded_analyses_info"
+        completed = "downloaded_analyses_metadata"
     elif os.path.exists(os.path.join(outpath, study_file)):
-        completed = "downloaded_study_info"
+        completed = "downloaded_study_metadata"
     else:
         # no steps have been completed so start at beginning
         completed = None
@@ -135,7 +150,7 @@ if __name__ == "__main__":
 
     # Step one: download study info
     if progress is None: # then start from beginning
-        logger.info("Initiating Step One: Downloading study info")
+        logger.info("Initiating Step One: Downloading study metadata")
         df_studies_mgnify = get_studies_info(
             biome_name=biome_name,
             outpath=outpath,
@@ -143,11 +158,11 @@ if __name__ == "__main__":
             study_file=study_file
         )
         # update progress
-        progress = "downloaded_study_info"
+        progress = "downloaded_study_metadata"
 
     # Step two: download analyses info
-    if progress == "downloaded_study_info":
-        logger.info("Step Two: Downloading analyses info")
+    if progress == "downloaded_study_metadata":
+        logger.info("Step Two: Downloading analyses metadata")
 
         # check progress of analyses
         exp_types_to_do = check_analyses_progress(
@@ -182,14 +197,16 @@ if __name__ == "__main__":
             json.dump(all_analyses_info, outfile)
 
         # update progress
-        progress = "downloaded_analyses_info"
+        progress = "downloaded_analyses_metadata"
 
 
-    # New Step: downloading metadata
-    if progress == "downloaded_analyses_info":
+    # Step three: downloading metadata
+    if progress == "downloaded_analyses_metadata":
+        logger.info("Step Three: Downloading sample metadata")
+        # load analyses json
         df_analyses_mgnify = analyses_json_to_df(outpath, analyses_file)
         study_ids = df_analyses_mgnify["study_id"].unique().tolist()
-
+        # get sample metadata for all studyids
         sample_meta = get_sample_info(
             study_ids,
             outpath,
@@ -201,16 +218,18 @@ if __name__ == "__main__":
         progress = "downloaded_sample_metadata"
 
 
-    # Step three: join study and analyses info
+    # Step four: join all metadata
     if progress == "downloaded_sample_metadata":
-        logger.info("Step Three: Joining study and analyses info")
+        logger.info("Step Three: Joining study, analyses, sample metadata")
         # load jsons
         logger.info(f"Loading {os.path.join(outpath, study_file)}")
         df_studies_mgnify = studies_json_to_df(outpath, study_file)
         logger.info(f"Loading {os.path.join(outpath, analyses_file)}")
         df_analyses_mgnify = analyses_json_to_df(outpath, analyses_file)
+        logger.info(f"Loading {os.path.join(outpath, sample_file)}")
+        df_samples_mgnify = sample_json_to_df(outpath, sample_file)
 
-        # join dfs
+        # join study and analyses dfs
         logger.info(f"Joining study and analyses dfs and saving to {os.path.join(outpath, final_studies_file)} and {os.path.join(outpath, final_analyses_file)}")
         df_mgnify = join_studies_and_analyses_dfs(
             df_studies_mgnify,
@@ -220,13 +239,20 @@ if __name__ == "__main__":
             final_analyses_file
         )
 
-        
+        # join analyses and sample dfs
+        logger.info(f"Joining analyses and sample dfs and saving to {os.path.join(outpath, final_analyses_file)}")
+        df_fin_analyses = join_analyses_and_sample_dfs(
+            df_analyses_mgnify,
+            df_samples_mgnify,
+            outpath,
+            final_analyses_file
+        )
 
         # update progress
-        progress = "joined_study_analyses"
+        progress = "merged_metadata_tables"
 
     # Step four: Downloading data
-    if progress == "joined_study_analyses":
+    if progress == "merged_metadata_tables":
         logger.info("Step Four: Downloading study data")
 
         # reading in relevant studies 
@@ -256,16 +282,16 @@ if __name__ == "__main__":
         # update progress
         progress = "downloaded_data"
 
-        # Step five: 
-        if progress == "downloaded_data":
+    # Step five: 
+    if progress == "downloaded_data":
 
-            logger.info(
-                f"""
-                Process complete. 
-                Info and data from biome {biome_name} for experiments {experiment_types} 
-                has been downloaded and saved to {outpath}.
-                """
-            )
+        logger.info(
+            f"""
+            Process complete. 
+            Info and data from biome {biome_name} for experiments {experiment_types} 
+            has been downloaded and saved to {outpath}.
+            """
+        )
 
 else:
     print("Imported. Script not ran.")

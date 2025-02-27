@@ -1,19 +1,12 @@
 # ------------------------------------------------------------------------------------------------------
-# Script: Functions_getInfo_MGnify_studies_analyses.py
-# Author: Sebastian Ayala Ruano
-# Date: 09-12-2023
-# Description: This script retrieves a summary of MGnify studies and analyses for a given biome and
-# data type (amplicon, shotgun metagenomics, metatranscriptomic, or assembly). The attributes of the api requests can be
-# modified in the script. The fetch_studies_or_analyses_info returns a list of json files with information from all studies
-# or analyses for a given biome and data type. The get_studies_and_analyses_summary returns two dataframes, one with the
-# summary of analyses info and another with the summary of studies info.
-# Version: 1.0
+# Description: This script retrieves a summary of MGnify studies and analyses and samples for a given biome and
+# data type (amplicon, shotgun metagenomics, metatranscriptomic, or assembly). 
+# Version: 2.0
 # License: MIT License
-# Usage: call the functions from external scripts. See example_main.py
+# Usage: call the functions from external scripts. See get_studies.py
 # Warning: The script relies on the MGnify API, which could have high traffic. If the script fails, try again later.
-# References: https://github.com/Multiomics-Analytics-Group/Retrieve_info_MGnifyAPI/blob/main/Scripts/Functions_getInfo_MGnify_studies_analyses.py
 # ------------------------------------------------------------------------------------------------------
-# %%
+
 # Import libraries
 import requests
 import pandas as pd
@@ -35,7 +28,7 @@ def request_info(
     """Function to retrieve information for all MGnify studies or analyses for a given biome from a GET request
     Input: url (str) - URL for the GET request, e.g. https://www.ebi.ac.uk/metagenomics/api/v1/analyses
            params (dict) - query parameters for the GET request, e.g. biome_name
-    Output: all_studies_or_analyses (list) - list of json files with the data from all studies or analyses"""
+    Output: all_retrieved (list) - list of json files with the data from all studies or analyses"""
 
     print(f"Starting get request for data retrieval...\n{url}")
     response = requests.get(url, params=params)
@@ -47,10 +40,10 @@ def request_info(
         page_info = response.json()["meta"]["pagination"]
         total_count = page_info["count"]
         total_pages = page_info["pages"]
-        print(f"Total studies or analyses to retrieve: {total_count}")
+        print(f"Total studies/analyses/samples to retrieve: {total_count}")
         print(f"Total pages: {total_pages}")
 
-        all_studies_or_analyses = []
+        all_retrieved = []
         page = 1
 
         # Iterate through all pages and append the data to the list
@@ -62,13 +55,13 @@ def request_info(
 
             if response.status_code == 200:
                 data = response.json()["data"]
-                all_studies_or_analyses.extend(data)
+                all_retrieved.extend(data)
                 page += 1
 
                 # iteratively save if an output file is provided
                 if outfile:
                     with open(outfile, "w") as f:
-                        json.dump(all_studies_or_analyses, f)
+                        json.dump(all_retrieved, f)
 
                 # add waiting time to avoid overloading the server
                 time.sleep(wait_time)
@@ -80,7 +73,7 @@ def request_info(
                 break
 
         print("Data retrieval complete.")
-        return all_studies_or_analyses
+        return all_retrieved
     else:
         print(f"Failed to retrieve page info. Status code: {response.status_code}. {response.url}")
         return []  # Return an empty list if the request was not successful
@@ -448,3 +441,4 @@ def join_analyses_and_sample_dfs(
     df_combo.to_csv(os.path.join(outpath, final_analyses_file), index=False)
 
     return df_combo
+
