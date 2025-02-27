@@ -17,6 +17,7 @@ from mgnifyapi.utils import (
     get_logger,
     assert_nonempty_keys,
     assert_nonempty_vals,
+    create_folder
 )
 
 from mgnifyapi.preprocessing import (
@@ -27,8 +28,6 @@ from mgnifyapi.preprocessing import (
 )
 
 import os
-import logging
-import json
 import pandas as pd
  
 
@@ -63,10 +62,6 @@ if __name__ == "__main__":
     logger.info(f"Configuration: {config}")
 
     ## DEFAULT FILE NAMES
-    study_file="mgnify_studies.json"
-    analyses_file="mgnify_analyses.json"
-    sample_file="mgnify_samples.json"
-    final_studies_file="df_studies.csv"
     final_analyses_file="df_analyses.csv"
 
     ## MAIN FUNCTION
@@ -90,15 +85,19 @@ if __name__ == "__main__":
     logger.info(f"These studies were not downloaded: {not_existing_folders}")
     logger.info(f"Tidying these studies: {existing_folders}")
 
+    # create folder if it doesn't exist
+    create_folder(os.path.join(outpath, "processed_abundance_tables"))
 
     for study_id in existing_folders:
         logger.info(f"Preprocessing data for study {study_id}")
 
-        # HERE 
+        # Load sample metadata 
         # filter df_metadata for study_id's samples
-
+        study_metadata = df_metadata[df_metadata["study_id"]==study_id]
+        logger.info(f"Metadata for study {study_id} has # samples: {study_metadata.shape[0]}")
 
         # Load abundance tables
+        logger.info(f"Loading abundance tables for study {study_id}")
         abund_table_phylum = load_abund_table(
             os.path.join(outpath, study_id), study_id, phylum=True
         )
@@ -106,14 +105,55 @@ if __name__ == "__main__":
             os.path.join(outpath, study_id), study_id, phylum=False
         )
 
+        # saving for troubleshooting
+        abund_table_phylum.to_csv(
+            os.path.join(outpath, "processed_abundance_tables",
+                f"{study_id}_phylum_taxonomy_abundances.csv"), 
+            index=False
+        )
+        abund_table.to_csv(
+            os.path.join(outpath, "processed_abundance_tables",
+                f"{study_id}_genus_taxonomy_abundances.csv"), 
+            index=False
+        )
+
         # Preprocess abundance tables
+        logger.info(f"Preprocessing abundance tables for study {study_id}")
         abund_table_phylum = preprocess_abund_table_phylum(abund_table_phylum)
         abund_table_genus = preprocess_abund_table(abund_table, tax_rank="Genus")
 
-        # Load sample metadata
+        # drop duplicated samples
+        logger.info(f"Dropping duplicated samples for study {study_id}")
+        abund_table_phylum, missing_samp_phyl, dropped_ana_phyl = drop_duplicatedsamples(
+            abund_table_phylum, 
+            study_metadata, 
+            phylum=True
+        )
+        abund_table_genus, missing_samp_genus, dropped_ana_genus = drop_duplicatedsamples(
+            abund_table_genus, 
+            study_metadata, 
+            phylum=False
+        )
 
+        # save to study folder
+        logger.info(f"Saving processed data in {os.path.join(outpath, 'processed_abundance_tables')}")
+        # export the abundance tables as csv files
+        abund_table_phylum.to_csv(
+            os.path.join(outpath, "processed_abundance_tables",
+                f"{study_id}_phylum_taxonomy_abundances_clean.csv"), 
+            index=False
+        )
+        abund_table_genus.to_csv(
+            os.path.join(outpath, "processed_abundance_tables",
+                f"{study_id}_genus_taxonomy_abundances_clean.csv"), 
+            index=False
+        )
 
-
+        # export the missing samples as csv file
+        with open(
+            os.path.join(outpath, "processed_abundance_tables",
+                f"{study_id}_missing_samples.txt"), "w") as output:
+            output.write(str(missing_samp_phyl))
 
 else:
     print("Imported. Script not ran.")

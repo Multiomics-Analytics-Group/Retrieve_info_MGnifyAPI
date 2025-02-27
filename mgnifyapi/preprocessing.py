@@ -292,11 +292,11 @@ def drop_duplicatedsamples(abundance_df, metadata_df, phylum):
         taxonomic_columns = [col for col in possible_taxonomic_columns if col in abundance_df.columns]
 
     for _, row in metadata_df.iterrows():
-        if pd.isna(row['assembly_run_ids']):
+        if pd.isna(row['assembly_run_id']):
             missing_analysis_samples.append(row['sample_id'])
             continue
 
-        analysis_ids = row['assembly_run_ids'].split(';')
+        analysis_ids = row['assembly_run_id'].split(';')
         valid_analysis_ids = [id for id in analysis_ids if id in abundance_df.columns]
 
         if valid_analysis_ids:
