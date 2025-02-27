@@ -30,7 +30,6 @@ outputs/unique_mgys_studies_ids.txt
 */.idea/
 */.vscode/
 */.pytest_cache
-*/output-test/*
-*/output-test2/*
-*/output-test3/*
+*/output/*
+*/backup/*
 *.log
