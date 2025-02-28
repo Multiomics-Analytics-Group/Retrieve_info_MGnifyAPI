@@ -639,6 +639,8 @@ def filter_filepaths(
         for ex in exclude:
             if not isinstance(ex, str):
                 raise TypeError(f"must all be strings: {ex} not a string")
+        if len(exclude) == 0:
+            exclude = None
 
     # MAIN FUNCTION
 
