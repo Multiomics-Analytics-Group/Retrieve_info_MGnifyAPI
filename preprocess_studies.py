@@ -88,6 +88,8 @@ if __name__ == "__main__":
     # create folder if it doesn't exist
     create_folder(os.path.join(outpath, "processed_abundance_tables"))
 
+
+    #TODO WHAT WAS GOING ON 
     for study_id in existing_folders:
         logger.info(f"Preprocessing data for study {study_id}")
 
@@ -120,11 +122,19 @@ if __name__ == "__main__":
         # Preprocess abundance tables
 
         # check if possible first .. 
-        if abund_table[abund_table.columns[0]].str.split(';', expand=True).drop(columns=0).shape[1] > 0:
+        potential_columns = abund_table[
+            abund_table.columns[0]].str.split(';', expand=True).drop(columns=0)
+        if potential_columns.shape[1] > 0:
             logger.info(f"Preprocessing abundance tables for study {study_id}")
-        else:
+        elif potential_columns.shape[1] == 0:
             logger.info(f"No phylum abundance table for study {study_id}")
             continue
+
+        ordered_ranks = [
+            'Superkingdom', 'Kingdom', 'Phylum', 
+            'Class', 'Order', 'Family', 'Genus', 'Species'
+        ]
+
 
         abund_table_phylum = preprocess_abund_table_phylum(abund_table_phylum)
         abund_table_genus = preprocess_abund_table(abund_table, tax_rank="Genus")

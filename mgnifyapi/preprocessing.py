@@ -4,11 +4,124 @@ import random
 import glob
 import os
 
+from mgnifyapi.utils import (
+    filter_filepaths, 
+    assert_path,
+    create_folder
+)    
+
+def retrieve_abund_filenames(
+        folder_path:str,
+        selected_study:str,
+        phylum_files:bool,
+        exclude:list=["_LSU_"]
+) -> list:
+    
+    ## PRECONDITIONS
+    assert_path(folder_path)
+    if not isinstance(selected_study, str):
+        raise TypeError("The selected_study argument must be a string.")
+    if not isinstance(phylum_files, bool):
+        raise TypeError("The phylum argument must be a boolean.")
+    if not isinstance(exclude, list):
+        raise TypeError("The exclude argument must be a list.")
+
+    ## MAIN FUNCTION
+    ids = ["taxonomy", selected_study]    
+    exclusions = exclude.copy()
+    
+    # filtering for files
+    if phylum_files:
+        ids.append("_phylum_")
+    else:
+        exclusions.append("_phylum_")
+
+    file_list = filter_filepaths(
+        fpath=folder_path, 
+        identifiers=ids, 
+        exclude=exclusions
+    )
+
+    return file_list
+
+
+def get_mgnify_vers(
+    fname:str
+)->float:
+    """
+    This is specific to waht Ive seen so far for mgnify filenames
+    Get version number from filename
+    Input: fname (str) - filename
+    Output: version (float) - version number
+    """
+    ## PRECONDITIONS
+    if not isinstance(fname, str):
+        raise TypeError("The fname argument must be a string.")
+    
+    ## MAIN FUNCTION
+    version = float(
+        os.path.splitext(os.path.basename(fname))[0].split("_v")[-1]
+    )
+    return version
+
+
+def filter_abund_vers(
+    file_list:list,
+    keep:str|list|float="all"
+)->list:
+    """
+    Filter abundance table files by version
+    Input: file_list (list) - list of file paths
+           keep (str|list|float) - versions to keep
+    Output: new_file_list (list) - list of file paths after filtering
+    """
+    ## PRECONDITIONS
+    if not isinstance(file_list, list):
+        raise TypeError("The file_list argument must be a list.")
+    
+    ## MAIN FUNCTION
+    # what versions are available?
+    avail_vers = [get_mgnify_vers(file) for file in file_list]
+    # verbose
+    print(f"Available versions: {avail_vers}")
+    
+    # init list
+    new_file_list = []
+    # keep all versions of everything
+    if keep == "all":
+        return file_list
+    # only keeping files of the latest version
+    if keep == "latest":
+        latest_ver = max(avail_vers)
+        # filter
+        for file in file_list:
+            # getting version
+            ver = get_mgnify_vers(file)
+            # only if latest version
+            if ver == latest_ver:
+                new_file_list.append(file)
+        return new_file_list
+    # only keeping specific versions (multiple)
+    if isinstance(keep, list):
+        for file in file_list:
+            ver = get_mgnify_vers(file)
+            if ver in keep:
+                new_file_list.append(file)
+        return new_file_list
+    # only keeping specific version (single)
+    if isinstance(keep, float): 
+        for file in file_list:
+            ver = get_mgnify_vers(file)
+            if ver == keep:
+                new_file_list.append(file)
+        return new_file_list
+    else:
+        raise TypeError("The keep argument must be a list of floats or a float.")
+
+
 def load_abund_table(
-        folder_path:str, 
-        selected_study:str, 
-        phylum:bool
-    ) -> pd.DataFrame|None:
+        filename:str
+    ) -> pd.DataFrame:
     """
    Load the abundance table for a specific study and taxonomic rank
     Input: folder_path (str) - path to the folder containing the abundance table
@@ -17,27 +130,22 @@ def load_abund_table(
     Output: abund_table (DataFrame) - DataFrame with the abundance table for the study and taxonomic rank
     """
 
-    # Broad pattern to initially match files
-    broad_pattern = f"{selected_study}*taxonomy*.tsv"
-    file_list = glob.glob(os.path.join(folder_path, broad_pattern))
+    ## PRECONDITIONS
+    if not isinstance(filename, str):
+        raise TypeError("The filename argument must be a string.")
 
-    if phylum:
-        # Filtering for phylum taxonomy files
-        filtered_files = [f for f in file_list if 'phylum_taxonomy' in f and '_LSU_' not in f]
-    else:
-        # Filtering out unwanted files (those with '_phylum_' and '_LSU_')
-        filtered_files = [f for f in file_list if '_phylum_' not in f and '_LSU_' not in f]
+    ## MAIN FUNCTION
+    abund_table = pd.read_csv(filename, sep='\t')
+    return abund_table
 
-    # Check if the filtered list is not empty
-    if filtered_files:
-        filename = filtered_files[0]  # Selecting the first matching file
-        print(f"File found for the study '{selected_study}' in folder '{folder_path}': {filename}")
-        # Load abundance table for the study
-        abund_table = pd.read_csv(filename, sep='\t')
-        return abund_table
-    else:
-        print(f"No files found for the study '{selected_study}' in folder '{folder_path}'.")
-        return None
+
+def check_tax_rank(
+    abund_table:pd.DataFrame,
+    tax_rank:str
+):
+   
+   # TODO .. below is idk -- somehow need to skip if given tax rank is not avail (before filter_rows?)
+   pass
 
 
 
