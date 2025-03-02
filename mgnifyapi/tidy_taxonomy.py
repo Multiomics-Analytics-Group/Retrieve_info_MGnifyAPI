@@ -13,7 +13,8 @@ from mgnifyapi.utils import (
 def retrieve_abund_filenames(
         folder_path:str,
         selected_study:str,
-        phylum_files:bool,
+        mgnify_vers:str|float|list="all",
+        phylum_files:bool=False,
         exclude:list=["_LSU_"]
 ) -> list:
     
@@ -42,7 +43,13 @@ def retrieve_abund_filenames(
         exclude=exclusions
     )
 
-    return file_list
+    # filtering for versions
+    filtered_file_list = filter_abund_vers(
+        file_list=file_list,
+        keep=mgnify_vers
+    )
+
+    return filtered_file_list
 
 
 def get_mgnify_vers(
@@ -140,13 +147,61 @@ def load_abund_table(
 
 
 def check_tax_rank(
-    abund_table:pd.DataFrame,
+    reshaped_df:pd.DataFrame,
     tax_rank:str
-):
+)->bool:
+    """
+    Check if the taxonomic rank is present in the DataFrame
+    Input: reshaped_df (DataFrame) - DataFrame with the reshaped abundance table
+           tax_rank (str) - taxonomic rank to check
+    Output: result (bool) - True if the taxonomic rank is present in the DataFrame, False otherwise
+    """
+    ## PRECONDITIONS
+    if not isinstance(reshaped_df, pd.DataFrame):
+        raise TypeError("The reshaped_df argument must be a DataFrame.")
+    if not isinstance(tax_rank, str):
+        raise TypeError("The tax_rank argument must be a string.")
+    result = tax_rank in reshaped_df.columns
    
-   # TODO .. below is idk -- somehow need to skip if given tax rank is not avail (before filter_rows?)
-   pass
+    return result
 
+
+def reshape_table(
+    abund_table:pd.DataFrame,
+    superkingdom:bool=False
+)->pd.DataFrame:
+
+    # Splitting taxonomic information
+    taxonomic_df = abund_table[abund_table.columns[0]].str.split(';', expand=True).drop(columns=0)
+
+    # Remove the first row corresponding to the Root taxonomic rank
+    taxonomic_df = taxonomic_df.iloc[1:, :]
+
+    if superkingdom:
+        ranks = ['Superkingdom', 'Kingdom', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species']
+    else:
+        ranks = ['Kingdom', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species']
+
+    # Define the column names for this format
+    taxonomic_df = taxonomic_df.rename(
+        columns={i: rank for i, rank in enumerate(ranks)},
+    )
+    
+    # Isolating abundance data
+    abundance_df = abund_table.iloc[:, 1:]
+
+    # Remove the first row corresponding to the sums of the counts in each column
+    abundance_df = abundance_df.iloc[1:, :]
+
+    # Delete additional characters (e.g. 'k__', 'p__', or '[]') from the taxonomic df
+    for col in taxonomic_df.columns:  
+        taxonomic_df[col] = taxonomic_df[col].apply(lambda x: x[3:] if pd.notnull(x) else x)
+        taxonomic_df[col] = taxonomic_df[col].str.replace('[', '').str.replace(']', '')
+
+    # Merge taxonomic and abundance dataframes
+    merged_df = pd.concat([taxonomic_df, abundance_df], axis=1)
+
+    return merged_df
 
 
 # Function to preprocess phylum abundance table for a specific study
@@ -187,8 +242,9 @@ def preprocess_abund_table_phylum(abund_table:pd.DataFrame) -> pd.DataFrame:
     
     return abund_table
 
+
 # Functions to preprocess abundance table for a specific study and taxonomic rank
-def preprocess_abund_table(abund_table:pd.DataFrame, tax_rank:str) -> pd.DataFrame:
+def preprocess_abund_table(abund_table:pd.DataFrame, tax_rank:str) -> pd.DataFrame|None:
     """
     Preprocess the abundance table for a specific study and taxonomic rank
     Input: abund_table (DataFrame) - DataFrame with the abundance table for the study
@@ -196,54 +252,35 @@ def preprocess_abund_table(abund_table:pd.DataFrame, tax_rank:str) -> pd.DataFra
     Output: abund_table (DataFrame) - DataFrame with the abundance table for the study after preprocessing
     """
     # Determine the file format and call the respective function
+    output = None
     if abund_table.iloc[0, 0].startswith('sk__') or str(abund_table.iloc[0, 0]) == 'Unclassified':
-        return preprocess_abund_table_superkingdom(abund_table, tax_rank)
-    elif abund_table.iloc[0, 0] == 'Root':
-        return preprocess_abund_table_root(abund_table, tax_rank)
+        reshaped = reshape_table(abund_table, superkingdom=True)
+        if check_tax_rank(reshaped, tax_rank):
+            output = preprocess_abund_table_superkingdom(reshaped, tax_rank)
+        else:
+            print(f"Taxonomic rank {tax_rank} not present in tables: {reshaped.columns}")
+
+    elif abund_table.iloc[0, 0].startswith('Root'):
+        reshaped = reshape_table(abund_table)
+        if check_tax_rank(reshaped, tax_rank):
+            output = preprocess_abund_table_root(reshaped, tax_rank)
+        else:
+            print(f"Taxonomic rank {tax_rank} not present in tables: {reshaped.columns}")
     else:
         raise ValueError("Unknown file format")
+    
+    return output
 
 # Function to preprocess file format with Root as the first column
-def preprocess_abund_table_root(abund_table, tax_rank):
+def preprocess_abund_table_root(reshaped_df, tax_rank):
     """
     Preprocess the abundance table for a specific study and taxonomic rank in the file format with Root as the first column
     Input: abund_table (DataFrame) - DataFrame with the abundance table for the study
            tax_rank (str) - taxonomic rank to preprocess
     Output: abund_table (DataFrame) - DataFrame with the abundance table for the study after preprocessing
     """
-    # Splitting taxonomic information
-    taxonomic_df = abund_table[abund_table.columns[0]].str.split(';', expand=True).drop(columns=0)
-
-    # Remove the first row corresponding to the Root taxonomic rank
-    taxonomic_df = taxonomic_df.iloc[1:, :]
-
-    # Define the column names for this format
-    taxonomic_df = taxonomic_df.rename(
-        columns={
-            i: tax_rank for i, tax_rank in enumerate(
-                ['Kingdom', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species']
-            )
-        },
-    )
-
-    #taxonomic_df.columns = ['Kingdom', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species']
-    
-    # Isolating abundance data
-    abundance_df = abund_table.iloc[:, 1:]
-
-    # Remove the first row corresponding to the sums of the counts in each column
-    abundance_df = abundance_df.iloc[1:, :]
-
-    # Delete additional characters (e.g. 'k__', 'p__', or '[]') from the taxonomic df
-    for col in taxonomic_df.columns:  
-        taxonomic_df[col] = taxonomic_df[col].apply(lambda x: x[3:] if pd.notnull(x) else x)
-        taxonomic_df[col] = taxonomic_df[col].str.replace('[', '').str.replace(']', '')
-
-    # Merge taxonomic and abundance dataframes
-    merged_df = pd.concat([taxonomic_df, abundance_df], axis=1)
-
     # Filter out unwanted rows
-    filtered_df = filter_rows(merged_df, tax_rank)
+    filtered_df = filter_rows(reshaped_df, tax_rank)
 
     # Aggregate data
     aggregated_abund_table = aggregate_data(filtered_df, tax_rank)
@@ -254,47 +291,15 @@ def preprocess_abund_table_root(abund_table, tax_rank):
     return aggregated_abund_table
 
 # Function to preprocess file format with sk__ as the first column
-def preprocess_abund_table_superkingdom(abund_table, tax_rank):
+def preprocess_abund_table_superkingdom(reshaped_df, tax_rank):
     """
     Preprocess the abundance table for a specific study and taxonomic rank in the file format with sk__ as the first column
     Input: abund_table (DataFrame) - DataFrame with the abundance table for the study
            tax_rank (str) - taxonomic rank to preprocess
     Output: abund_table (DataFrame) - DataFrame with the abundance table for the study after preprocessing
     """
-    # Split the taxonomic information into separate columns
-    taxonomic_df = abund_table[abund_table.columns[0]].str.split(';', expand=True)
-
-    # Define the column names for this format
-    # Define the column names for this format
-    taxonomic_df = taxonomic_df.rename(
-        columns={
-            i: tax_rank for i, tax_rank in enumerate(
-                ['Superkingdom', 'Kingdom', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species']
-            )
-        },
-    )
-    #taxonomic_df.columns  = ['Superkingdom', 'Kingdom', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species']
-
-    # Remove the first row corresponding to the Root taxonomic rank
-    taxonomic_df = taxonomic_df.iloc[1:, :]
-    
-    # Isolating abundance data
-    abundance_df = abund_table.iloc[:, 1:]
-
-    # Remove the first row corresponding to the sums of the counts in each column
-    abundance_df = abundance_df.iloc[1:, :]
-
-    # Delete additional characters (e.g. 'k__', 'p__', 'sk__', or '[]') from the taxonomic df
-    for col in taxonomic_df.columns:
-        # Using .loc for safe modification
-        taxonomic_df.loc[:, col] = taxonomic_df[col].apply(lambda x: x.split("__", 1)[-1] if pd.notnull(x) else x)
-        taxonomic_df.loc[:, col] = taxonomic_df[col].str.replace('[', '').str.replace(']', '')
-    
-    # Merge taxonomic and abundance dataframes
-    merged_df = pd.concat([taxonomic_df, abundance_df], axis=1)
-
     # Filter out unwanted rows
-    filtered_df = filter_rows(merged_df, tax_rank)
+    filtered_df = filter_rows(reshaped_df, tax_rank)
 
     # Aggregate data
     aggregated_abund_table = aggregate_data(filtered_df, tax_rank)
@@ -320,17 +325,16 @@ def filter_rows(abund_table, tax_rank):
            tax_rank (str) - taxonomic rank to preprocess
     Output: abund_table (DataFrame) - DataFrame with the abundance table for the study after filtering
     """
+
     # Delete rows with NAN value in the tax_rank column
     abund_table = abund_table.dropna(subset=[tax_rank])
-
     # Delete rows with empty strings, None, or whitespace in the tax_rank column
-    abund_table.loc[:, tax_rank] = abund_table[tax_rank].fillna('')  # Replace NaN with empty string
-    abund_table = abund_table[~abund_table[tax_rank].apply(lambda x: not x.strip())]  # Filter out empty strings
+    abund_table = abund_table[abund_table[tax_rank] != '']
+    abund_table = abund_table[abund_table[tax_rank] != None]    
 
     # Delete rows with unassigned and unclassified taxkanomic rank
     abund_table = abund_table[abund_table[tax_rank] != 'Unassigned']
     abund_table = abund_table[abund_table[tax_rank] != 'unclassified']
-
     # Delete rows that contain 'Candidatus', 'candidate', or names with unofficial names
     # (e.g. 'TA06', 'WPS-2', 'WS1', 'AC1', etc.)
     unoff_names_pattern1 = "^[A-Z]{2,}[0-9-]*$|.*-.*|^[A-Z]{2,}"
