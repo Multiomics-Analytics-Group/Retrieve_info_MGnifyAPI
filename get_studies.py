@@ -120,7 +120,8 @@ if __name__ == "__main__":
     config = config_loader(config_filepath)
     assert_nonempty_keys(config)
     assert_nonempty_vals(config)
-    outpath = config["output path"]
+    outpath = config["output"]["path"]
+    down_fold = config["output"]["download data folder"]
     biome_name = config['search params']["biome name"]
     study_url = config["urls"]["study info"]
     analyses_url = config["urls"]["analyses info"]
@@ -264,7 +265,7 @@ if __name__ == "__main__":
         existing_folders = []
         studies_to_download = []
         for study_id in study_list:
-            if os.path.isdir(os.path.join(outpath, study_id)):
+            if os.path.isdir(os.path.join(outpath, down_fold, study_id)):
                 existing_folders.append(study_id)
             else: 
                 studies_to_download.append(study_id)
@@ -275,7 +276,7 @@ if __name__ == "__main__":
             logger.info(f"Downloading data for study {study_id}")
             process_study_results(
                 study_id,
-                outpath,
+                os.path.join(outpath, down_fold),
                 base_url=study_url
             )
 

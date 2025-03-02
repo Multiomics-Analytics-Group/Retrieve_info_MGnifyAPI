@@ -2,7 +2,15 @@ search params:
   biome name : "root:Engineered:wastewater"
   experiment types: ["metagenomic", "metatranscriptomic", "assembly"]
 
-output path: "/Users/anglup/GitHub/mgnifyapi/notebooks/output"
+preprocessing:
+  mgnify versions: latest
+  tax aggregate: Genus
+
+output: 
+  path: "/Users/anglup/GitHub/mgnifyapi/notebooks/output"
+  download data folder: "downloads"
+  preprocessing folder: "processed_abundance_tables"
+
 
 urls:
   study info: "https://www.ebi.ac.uk/metagenomics/api/v1/studies"
