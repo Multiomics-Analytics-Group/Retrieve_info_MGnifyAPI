@@ -66,19 +66,19 @@ The repository is designed to retrieve information and results from MGnify studi
    ```bash
    poetry run mgnifyapi-get-studies -c <path-to-config.yaml>
    ```
+> [!IMPORTANT]
+> A log file is generated every run to <repo-root>/logs
 
 That's it :)
 
 
 #TODO 4. `get_fastq_from_list_ids.py`: obtains FASTQ files from MGnify studies.
 
-#### Note: Obtain raw result files for a MGnify study
-The `bulk_download` option of the `mg-toolkit` Python package provides a command line interface to download raw result files for a MGnify study.
-For instance, to download the raw results files for the taxonomic analysis of the study [MGYS00001392](https://www.ebi.ac.uk/metagenomics/studies/MGYS00001392) obtained with the pipeline 5 or greater, you can run the following command:
-```bash
-$ mg-toolkit bulk_download -a MGYS00001392 --result_group taxonomic_analysis_unite -o Output/
-```
-You can find more information about this package and additional options [here](https://pypi.org/project/mg-toolkit/). 
+> [!TIP]
+> Obtain raw result files for a MGnify study
+> The `bulk_download` option of the `mg-toolkit` Python package provides a CLI to download raw result files for a MGnify study. For instance, to download the raw results files for the taxonomic analysis of the study [MGYS00001392](https://www.ebi.ac.uk/metagenomics/studies/MGYS00001392) obtained with the pipeline 5 or greater, you can run the following command:
+> `mg-toolkit bulk_download -a MGYS00001392 --result_group taxonomic_analysis_unite -o Output/`
+> You can find more information about this package and additional options [here](https://pypi.org/project/mg-toolkit/). 
 
 ### Preprocessing data 
 #TODO work in progress
