@@ -1,0 +1,18 @@
+search params:
+  biome name : 'root:Engineered:Biogas plant'
+  #"root:Engineered:wastewater" #'root:Engineered:Bioreactor' #'root:Engineered:Food production' #"root:Engineered:wastewater"
+  experiment types: ["metagenomic", "metatranscriptomic", "assembly"]
+
+preprocessing:
+  mgnify versions: all
+  tax aggregate: Genus
+
+output: 
+  path: "/Users/anglup/GitHub/mgnifyapi/notebooks/output-syncoms"
+  download data folder: "downloads"
+  preprocessing folder: "processed_abundance_tables"
+
+
+urls:
+  study info: "https://www.ebi.ac.uk/metagenomics/api/v1/studies"
+  analyses info: "https://www.ebi.ac.uk/metagenomics/api/v1/analyses"
