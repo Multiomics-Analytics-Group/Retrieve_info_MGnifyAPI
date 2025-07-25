@@ -18,6 +18,7 @@ from mgnifyapi.utils import (
     get_logger,
     assert_nonempty_keys,
     assert_nonempty_vals,
+    create_folder
 )
 
 from mgnifyapi.retrieve_metadata import (
@@ -99,15 +100,12 @@ def check_analyses_progress(
     return exp_types_to_do
     
 
-if __name__ == "__main__":
-    ## GET ARGS
-    # init
-    args = get_args(
-        prog_name="get-mgnify-studies",
-        others=dict(description="get studies from mgnify"),
-    )
+def main():
+    ## set up
+    # get config path arg
+    args = get_args(prog_name="get-mgnify-studies")
+    # load config 
     config_filepath = args.config
-
 
     ## START LOG FILE
     logger = get_logger()
@@ -140,6 +138,7 @@ if __name__ == "__main__":
     ## MAIN FUNCTION
     # Check previous progress
     logger.info(f"Progress check based on files in {outpath}")
+    create_folder(outpath)
     progress = check_progress(
         outpath=outpath,
         study_file=study_file,
@@ -294,5 +293,5 @@ if __name__ == "__main__":
             """
         )
 
-else:
-    print("Imported. Script not ran.")
+if __name__ == "__main__":
+    main()
