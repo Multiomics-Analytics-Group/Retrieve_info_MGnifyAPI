@@ -33,3 +33,4 @@ outputs/unique_mgys_studies_ids.txt
 */output/*
 */backup/*
 *.log
+notebooks/output*/*
